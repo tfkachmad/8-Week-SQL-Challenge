@@ -1,1 +1,1 @@
-# Case-Study-1-Dannys-Diner
+# :ramen: Case Study #1 - Danny's Diner
