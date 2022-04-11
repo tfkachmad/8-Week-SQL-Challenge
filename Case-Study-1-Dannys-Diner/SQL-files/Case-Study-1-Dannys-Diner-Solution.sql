@@ -130,7 +130,7 @@ WHERE rank_member = 1;
 
 --	7.	Which item was purchased just before the customer became a member?
 WITH before_member_purchase
-AS (SELECT RANK() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date) AS rank_member,
+AS (SELECT RANK() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date DESC) AS rank_member,
            sales.customer_id,
            sales.product_name
     FROM #sales_menu_table AS sales
@@ -145,10 +145,10 @@ WHERE rank_member = 1;
 
 /*
 	customer_id product_name
-	----------- ------------
-	A           sushi
-	A           curry
-	B           sushi
+    ----------- ------------
+    A           sushi
+    A           curry
+    B           sushi
 */
 
 
