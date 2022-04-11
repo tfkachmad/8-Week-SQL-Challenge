@@ -4,7 +4,7 @@
 
 ## :pencil2: Preparation
 
--   Create a temp table to join `dannys_diner.sales` and `dannys_diner.menu` table
+- Create a temp table to join `sales` and `menu` table. Also, add order number for each order by customer.
 
     ```sql
     -- Create a Temp Table to join the sales and menu table.
@@ -27,7 +27,7 @@
 
 1. What is the total amount each customer spent at the restaurant?
 
-    - Sum the `total` and group it by the `customer_id`
+    - Sum the price of each items from the `#sales_menu_table` and group it by each customer
 
     <br>
 
@@ -37,6 +37,8 @@
     FROM #sales_menu_table
     GROUP BY customer_id;
     ```
+
+    <p align="center">
 
     | customer | total_spent |
     | -------- | ----------- |
@@ -48,7 +50,7 @@
 
 2. How many days has each customer visited the restaurant?
 
-    -
+    - Count the distinct of each order from the `sales` table and group it by each customer
 
     <br>
 
@@ -58,6 +60,8 @@
     FROM dannys_diner.sales
     GROUP BY customer_id;
     ```
+
+    <p align="center">
 
     | customer | days_visited |
     | -------- | ------------ |
@@ -69,7 +73,7 @@
 
 3. What was the first item from the menu purchased by each customer?
 
-    -
+    - Find the `row_number = 1` for each customer
 
     <br>
 
@@ -79,6 +83,8 @@
     FROM #sales_menu_table
     WHERE row_order = 1;
     ```
+
+    <p align="center">
 
     | customer | first_purchase |
     | -------- | -------------- |
@@ -90,7 +96,8 @@
 
 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 
-    -
+    - Count the number of each order occured and group it by the product name
+    - Order the count result descending and `SELECT TOP 1` the product name and the count
 
     <br>
 
@@ -103,6 +110,8 @@
     ORDER BY 2 DESC;
     ```
 
+    <p align="center">
+
     | product_name | total_purchased |
     | ------------ | --------------- |
     | ramen        | 8               |
@@ -111,7 +120,8 @@
 
 5. Which item was the most popular for each customer?
 
-    -
+    - `RANK()` the count of order by each customer
+    - Find the rank that is equal to 1 for each customer and the product name
 
     <br>
 
@@ -130,6 +140,8 @@
     WHERE rank_product = 1;
     ```
 
+    <p align="center">
+
     | customer | product_name |
     | -------- | ------------ |
     | A        | ramen        |
@@ -142,7 +154,9 @@
 
 6. Which item was purchased first by the customer after they became a member?
 
-    -
+    - Find each customer order from `#sales_menu_table` that occured after they become member from `member` table
+    - `RANK()` the order date by each member
+    - Find the rank result that equal to 1 for each member and display their id and the product they order
 
     <br>
 
@@ -162,6 +176,8 @@
     WHERE rank_member = 1;
     ```
 
+    <p align="center">
+
     | customer | product_name |
     | -------- | ------------ |
     | A        | curry        |
@@ -169,15 +185,17 @@
 
 <br>
 
-1. Which item was purchased just before the customer became a member?
+7. Which item was purchased just before the customer became a member?
 
-    -
+    - Find each customer order from `#sales_menu_table` that occured before they become member from `member` table
+    - `RANK()` the order date by each member to find their latest order before became a member
+    - Find the rank result that equal to 1 for each member and display their id and the product they order
 
     <br>
 
     ```sql
     WITH before_member_purchase
-    AS (SELECT RANK() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date) AS rank_member,
+    AS (SELECT RANK() OVER (PARTITION BY sales.customer_id ORDER BY sales.order_date DESC) AS rank_member,
             sales.customer_id,
             sales.product_name
         FROM #sales_menu_table AS sales
@@ -191,17 +209,21 @@
     WHERE rank_member = 1;
     ```
 
-    | customer | product_name |
-    | -------- | ------------ |
-    | A        | sushi        |
-    | A        | curry        |
-    | B        | curry        |
+    <p align="center">
+
+    | customer_id | product_name |
+    | ----------- | ------------ |
+    | A           | sushi        |
+    | A           | curry        |
+    | B           | sushi        |
 
 <br>
 
-1. What is the total items and amount spent for each member before they became a member?
+8. What is the total items and amount spent for each member before they became a member?
 
-    -
+    - Find each customer data from `#sales_menu_table` that occured before they become member from `member` table
+    - Count each item purchased by each member
+    - Sum the price of each item purchased by each member
 
     <br>
 
@@ -222,6 +244,8 @@
     GROUP BY customer_id;
     ```
 
+    <p align="center">
+
     | customer | item_purchased | total_spent |
     | -------- | -------------- | ----------- |
     | A        | 2              | $25         |
@@ -229,9 +253,10 @@
 
 <br>
 
-1. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
+9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 
-    -
+    - Find the points for orders each customer made
+    - Sum the total points each customer made from their orders
 
     <br>
 
@@ -251,8 +276,9 @@
         SUM(points) AS total_points
     FROM points_table
     GROUP BY customer_id;
-
     ```
+
+    <p align="center">
 
     | customer | total_points |
     | -------- | ------------ |
@@ -262,9 +288,11 @@
 
 <br>
 
-1.  In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
+10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 
-    -
+    - Create a CTE for each customer, their join date, and add their join date by 7 using `DATEADD`
+    - Find the points each customer made for their orders based on the required condition above
+    - Sum the total points from each order customer made
 
     <br>
 
@@ -308,6 +336,8 @@
     FROM points
     GROUP BY customer_id;
     ```
+
+    <p align="center">
 
     | customer_id | total_points |
     | ----------- | ------------ |
