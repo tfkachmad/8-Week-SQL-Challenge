@@ -1,5 +1,6 @@
-<p style="text-align:center">
-<img src="../images/1.png" alt="image" width=50%/>
+<p align="center" width="100%">
+    <img width="50%" src="../images/1.png">
+</p>
 
 Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-1/).
 
@@ -21,8 +22,9 @@ Danny’s Diner is in need of your assistance to help the restaurant stay afloat
 
 # :mag: Entity Relationship Diagram
 
-<p style="text-align:center">
-<img src="../images/case-study-1-erd.png" alt="image" width=80%/>
+<p align="center" width="100%">
+    <img width="80%" src="../images/case-study-1-erd.png">
+</p>
 
 ---
 
