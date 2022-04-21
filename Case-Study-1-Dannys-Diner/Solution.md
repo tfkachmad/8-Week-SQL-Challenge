@@ -1,6 +1,6 @@
 # :ramen: Case Study 1 - Danny's Dinner Solution
 
-:rocket: **DBMS: SQL Server**
+![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
 
 ## :pencil2: Preparation
 
