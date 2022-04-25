@@ -55,6 +55,8 @@ Danny’s Diner is in need of your assistance to help the restaurant stay afloat
 
 </div>
 
+<br>
+
 <div align="center">
 
 **Table 2: Menu**
@@ -66,6 +68,8 @@ Danny’s Diner is in need of your assistance to help the restaurant stay afloat
 | 3          | ramen        | 12    |
 
 </div>
+
+<br>
 
 <div align="center">
 
@@ -82,6 +86,9 @@ Danny’s Diner is in need of your assistance to help the restaurant stay afloat
 
 # :pencil: Questions and Solution
 
+<details>
+<summary>Questions</summary>
+
 1. What is the total amount each customer spent at the restaurant?
 2. How many days has each customer visited the restaurant?
 3. What was the first item from the menu purchased by each customer?
@@ -93,6 +100,8 @@ Danny’s Diner is in need of your assistance to help the restaurant stay afloat
 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 
+</details>
+
 **Click** the badge below to view my solution for this case study.
 
-[![badge](https://img.shields.io/badge/CLICK%20ME-Case%20Study%20Solution-red?style=for-the-badge)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-1-Dannys-Diner/Solution.md)
+[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-1-Dannys-Diner/Solution.md)
