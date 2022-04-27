@@ -90,33 +90,31 @@ FROM (
 */
 --
 --	7.	For each customer, how many delivered pizzas had at least 1 change and how many had no changes?
-SELECT customer.customer_id
+SELECT customer_id
 	,COUNT(CASE
 			WHEN (
-					customer.exclusions IS NULL
-					AND customer.extras IS NOT NULL
+					exclusions IS NULL
+					AND extras IS NOT NULL
 					)
 				OR (
-					customer.exclusions IS NOT NULL
-					AND customer.extras IS NULL
+					exclusions IS NOT NULL
+					AND extras IS NULL
 					)
 				OR (
-					customer.exclusions IS NOT NULL
-					AND customer.extras IS NOT NULL
+					exclusions IS NOT NULL
+					AND extras IS NOT NULL
 					)
 				THEN 1
 			ELSE NULL
 			END) AS pizza_had_change
 	,COUNT(CASE
-			WHEN customer.exclusions IS NULL
-				AND customer.extras IS NULL
+			WHEN exclusions IS NULL
+				AND extras IS NULL
 				THEN 1
 			ELSE NULL
 			END) AS pizza_had_no_change
-FROM ##customer_orders_cleaned AS customer
-JOIN pizza_runner.runner_orders AS runner
-	ON customer.order_id = runner.order_id
-GROUP BY customer.customer_id;
+FROM ##customer_orders_cleaned
+GROUP BY customer_id;
 /*
 	customer_id pizza_had_change pizza_had_no_change
 	----------- ---------------- -------------------
@@ -129,9 +127,7 @@ GROUP BY customer.customer_id;
 --
 --	8.	How many pizzas were delivered that had both exclusions and extras?
 SELECT COUNT(*) AS pizza_with_exclusions_extras
-FROM ##customer_orders_cleaned AS customer
-JOIN ##runner_orders_cleaned AS runner
-	ON customer.order_id = runner.order_id
+FROM ##customer_orders_cleaned
 WHERE exclusions IS NOT NULL
 	AND extras IS NOT NULL;
 /*
