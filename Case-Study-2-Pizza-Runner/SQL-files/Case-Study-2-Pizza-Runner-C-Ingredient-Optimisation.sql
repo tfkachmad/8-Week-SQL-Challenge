@@ -172,22 +172,22 @@ SELECT order_id
 		) AS order_details
 FROM concat_build;
 /*
-order_id    customer_id order_details
------------ ----------- -----------------------------------------------------------------
-1           101         Meatlovers
-2           101         Meatlovers
-3           102         Meatlovers
-3           102         Vegetarian
-4           103         Meatlovers - Exclude Cheese
-4           103         Meatlovers - Exclude Cheese
-4           103         Vegetarian - Exclude Cheese
-5           104         Meatlovers - Extra Bacon
-6           101         Vegetarian
-7           105         Vegetarian - Extra Bacon
-8           102         Meatlovers
-9           103         Meatlovers - Exclude Cheese - Extra Bacon, Chicken
-10          104         Meatlovers
-10          104         Meatlovers - Exclude BBQ Sauce, Mushrooms - Extra Bacon, Cheese
+	order_id    customer_id order_details
+	----------- ----------- -----------------------------------------------------------------
+	1           101         Meatlovers
+	2           101         Meatlovers
+	3           102         Meatlovers
+	3           102         Vegetarian
+	4           103         Meatlovers - Exclude Cheese
+	4           103         Meatlovers - Exclude Cheese
+	4           103         Vegetarian - Exclude Cheese
+	5           104         Meatlovers - Extra Bacon
+	6           101         Vegetarian
+	7           105         Vegetarian - Extra Bacon
+	8           102         Meatlovers
+	9           103         Meatlovers - Exclude Cheese - Extra Bacon, Chicken
+	10          104         Meatlovers
+	10          104         Meatlovers - Exclude BBQ Sauce, Mushrooms - Extra Bacon, Cheese
 */
 --
 --	5.	Generate an alphabetically ordered comma separated ingredient list for each pizza order
