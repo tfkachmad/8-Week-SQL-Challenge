@@ -75,13 +75,13 @@ GROUP BY customer.customer_id;
 */
 --
 --	5.	What was the difference between the longest and shortest delivery times for all orders?
-SELECT MAX(distance) - MIN(distance) AS distance_difference_km
+SELECT MAX(duration) - MIN(duration) AS duration_difference_minutes
 FROM ##runner_orders_cleaned
 WHERE cancellation IS NULL;
 /*
-	distance_difference_km
-	----------------------
-	15
+	duration_difference_minutes
+	---------------------------
+	30
 */
 --
 --	6.	What was the average speed for each runner for each delivery
@@ -103,8 +103,8 @@ GROUP BY runner_id;
 WITH delivery
 AS (
 	SELECT s_delivery.runner_id
-		,COALESCE(success, 0) AS success
-		,COALESCE(failed, 0) AS failed
+		,COALESCE(success, 0) AS delivered
+		,COALESCE(failed, 0) AS undelivered
 	FROM (
 		SELECT runner_id
 			,CONVERT(FLOAT, COUNT(*)) AS success
@@ -122,7 +122,7 @@ AS (
 		ON s_delivery.runner_id = u_delivery.runner_id
 	)
 SELECT runner_id
-	,FORMAT((success / (success + failed)), 'p0') AS successful_delivery
+	,FORMAT((delivered / (delivered + undelivered)), 'p0') AS successful_delivery
 FROM delivery
 ORDER BY runner_id;
 /*
