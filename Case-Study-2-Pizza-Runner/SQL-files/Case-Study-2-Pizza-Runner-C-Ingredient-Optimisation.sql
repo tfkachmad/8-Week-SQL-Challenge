@@ -207,6 +207,7 @@ IF EXISTS #customer_orders_long;
 		ON ord.pizza_id = rec.pizza_id
 	JOIN ##pizza_names_cleaned AS piz
 		ON rec.pizza_id = piz.pizza_id;
+--
 -- Reshape the exclusions column from ##customer_orders_cleaned table to list the ingredients
 DROP TABLE
 IF EXISTS #customer_exclusions_long;
@@ -221,6 +222,7 @@ IF EXISTS #customer_exclusions_long;
 	JOIN ##pizza_names_cleaned AS pizz
 		ON ord.pizza_id = pizz.pizza_id
 	WHERE exclusions IS NOT NULL;
+--
 -- Reshape the extras column from ##customer_orders_cleaned table to list the ingredients
 DROP TABLE
 IF EXISTS #customer_extras_long;
@@ -235,7 +237,9 @@ IF EXISTS #customer_extras_long;
 	JOIN ##pizza_names_cleaned AS piz
 		ON ord.pizza_id = piz.pizza_id
 	WHERE EXTRAS IS NOT NULL;
--- Union with the new extras table
+--
+-- Union the new exclusion table and the new customer order table
+-- And, remove the topping in the second table that also exist in the exclusion table
 DROP TABLE
 IF EXISTS #customer_reduced;
 	WITH excluded
@@ -254,7 +258,7 @@ IF EXISTS #customer_reduced;
 			,customer_id
 			,pizza_name
 			,toppings
-		FROM ##customer_orders_long
+		FROM #customer_orders_long
 		)
 		,find_dup
 	AS (
@@ -284,17 +288,13 @@ IF EXISTS #customer_reduced;
 	SELECT *
 	INTO #customer_reduced
 	FROM drop_dup;
+--
+-- Union the reduced customer table with the new extras table
 -- Create a temp table to store the entirity of the result called #detailed_order
 DROP TABLE
 IF EXISTS #detailed_order;
-	SELECT order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,topping_id
-		,topping_name
-	INTO #detailed_order
-	FROM (
+	WITH customer_extras
+	AS (
 		SELECT order_row
 			,order_id
 			,customer_id
@@ -310,19 +310,30 @@ IF EXISTS #detailed_order;
 			,pizza_name
 			,toppings
 		FROM #customer_extras_long
-		) AS order_toppings
+		)
+	SELECT order_row
+		,order_id
+		,customer_id
+		,pizza_name
+		,topping_id
+		,topping_name
+	INTO #detailed_order
+	FROM customer_extras AS orders
 	JOIN ##pizza_toppings_cleaned AS toppings
-		ON order_toppings.toppings = toppings.topping_id;
+		ON orders.toppings = toppings.topping_id;
+--
 -- Answer the questions!
 WITH get_count
 AS (
 	SELECT order_row
+		,order_id
 		,customer_id
 		,pizza_name
 		,topping_name
 		,COUNT(topping_id) AS num
 	FROM #detailed_order AS orders
 	GROUP BY order_row
+		,order_id
 		,customer_id
 		,pizza_name
 		,topping_name
@@ -330,6 +341,7 @@ AS (
 	,topping_count
 AS (
 	SELECT order_row
+		,order_id
 		,customer_id
 		,pizza_name
 		,CASE
@@ -346,15 +358,18 @@ AS (
 	,topping_text
 AS (
 	SELECT order_row
+		,order_id
 		,customer_id
 		,pizza_name
 		,STRING_AGG(topping_num, ', ') AS toppings_detail
 	FROM topping_count
 	GROUP BY order_row
+		,order_id
 		,customer_id
 		,pizza_name
 	)
 SELECT order_row
+	,order_id
 	,customer_id
 	,CONCAT (
 		pizza_name
@@ -363,22 +378,22 @@ SELECT order_row
 		) AS order_detail
 FROM topping_text;
 /*
-	order_row            customer_id order_detail
-	-------------------- ----------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	1                    101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	2                    101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	3                    102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	4                    102         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	5                    103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
-	6                    103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
-	7                    103         Vegetarian: Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	8                    104         Meatlovers: 2xBacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	9                    101         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	10                   105         Vegetarian: Bacon, Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	11                   102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	12                   103         Meatlovers: 2xBacon, BBQ Sauce, Beef, 2xChicken, Mushrooms, Pepperoni, Salami
-	13                   104         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	14                   104         Meatlovers: 2xBacon, Beef, 2xCheese, Chicken, Pepperoni, Salami
+	order_row            order_id    customer_id order_detail
+	-------------------- ----------- ----------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+	1                    1           101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	2                    2           101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	3                    3           102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	4                    3           102         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
+	5                    4           103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
+	6                    4           103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
+	7                    4           103         Vegetarian: Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
+	8                    5           104         Meatlovers: 2xBacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	9                    6           101         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
+	10                   7           105         Vegetarian: Bacon, Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
+	11                   8           102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	12                   9           103         Meatlovers: 2xBacon, BBQ Sauce, Beef, 2xChicken, Mushrooms, Pepperoni, Salami
+	13                   10          104         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
+	14                   10          104         Meatlovers: 2xBacon, Beef, 2xCheese, Chicken, Pepperoni, Salami
 */
 --
 --	6.	What is the total quantity of each ingredient used in all delivered pizzas
