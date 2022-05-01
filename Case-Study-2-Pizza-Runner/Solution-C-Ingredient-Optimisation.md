@@ -37,6 +37,8 @@
     | Meatlovers | Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami |
     | Vegetarian | Cheese, Mushrooms, Onions, Peppers, Tomatoes, Tomato Sauce            |
 
+    <br/>
+
 2. What was the most commonly added extra?
 
     - `STRING_APPLY()` function will be used here to split the `extras` value to rows.
@@ -70,6 +72,8 @@
     | ------------ | ----------- |
     | Bacon        | 4           |
 
+    <br/>
+
 3. What was the most common exclusion?
 
     - Use the same way as the previous question, but this time with exclusion column.
@@ -92,6 +96,8 @@
     | topping_name | times_excluded |
     | ------------ | -------------- |
     | Cheese       | 4              |
+
+    <br/>
 
 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
 
@@ -255,6 +261,8 @@
     | 9        | 103         | Meatlovers - Exclude Cheese - Extra Bacon, Chicken              |
     | 10       | 104         | Meatlovers                                                      |
     | 10       | 104         | Meatlovers - Exclude BBQ Sauce, Mushrooms - Extra Bacon, Cheese |
+
+    <br/>
 
 5. Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients.
     1. For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
