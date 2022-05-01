@@ -18,8 +18,14 @@ INSERT INTO #pizza_price (
 	"pizza_id"
 	,"pizza_price"
 	)
-VALUES (1, 12), (2, 10);
-
+VALUES (
+	1
+	,12
+	)
+	,(
+	2
+	,10
+	);
 SELECT CONCAT (
 		'$'
 		,SUM(pizza_price)
@@ -77,26 +83,47 @@ IF EXISTS pizza_runner.order_rating;
 		"order_id" INTEGER
 		,"rating" INTEGER
 		);
-INSERT INTO pizza_runner.order_rating (
-	"order_id"
-	,"rating"
-	)
-VALUES ('1', '5'), ('2', '5'), ('3', '4'), ('4', '5'), ('5', '3'), ('6', '5'), ('7', '4'), ('8', '5'), ('9', '5'), ('10', '4');
 --
+-- CTE to find each order_id
+WITH orders
+AS (
+	SELECT DISTINCT order_id
+	FROM ##customer_orders_cleaned
+	)
+	--
+	-- CTE to find order_id from order that is not cancelled
+	-- and add random rating from 1-5
+	,finished_order
+AS (
+	SELECT order_id
+		,ABS(CHECKSUM(NEWID())) % 5 + 1 AS rating
+	FROM ##runner_orders_cleaned
+	WHERE cancellation IS NULL
+	)
+--
+-- Insert the CTEs result to the order_rating table
+INSERT INTO pizza_runner.order_rating
+SELECT o.order_id
+	,fo.rating
+FROM orders AS o
+LEFT JOIN finished_order AS fo
+	ON o.order_id = fo.order_id
+--
+-- The resulted new order_rating table
 SELECT *
 FROM pizza_runner.order_rating;
 /*
 	order_id    rating
 	----------- -----------
 	1           5
-	2           5
-	3           4
-	4           5
-	5           3
-	6           5
-	7           4
-	8           5
-	9           5
+	2           2
+	3           2
+	4           4
+	5           2
+	6           NULL
+	7           3
+	8           4
+	9           NULL
 	10          4
 */
 --
@@ -185,6 +212,8 @@ FROM pizza_runner.successful_orders;
 --	5.	If a Meat Lovers pizza was $12 and Vegetarian $10 fixed prices
 --		with no cost for extras and each runner is paid $0.30 per kilometre
 --		traveled - how much money does Pizza Runner have left over after these deliveries?
+--
+-- CTE to find the Pizza Runner total profit
 WITH pizza_profit
 AS (
 	SELECT SUM(pizza_price) AS pizza_runner_profit
@@ -192,12 +221,16 @@ AS (
 	JOIN #pizza_price AS pri
 		ON ord.pizza_id = pri.pizza_id
 	)
+--
+-- CTE to find the payment for each kilometre a runner traveled
 	,runner_paid
 AS (
 	SELECT (SUM(distance) * 0.3) AS runner_pay
 	FROM ##runner_orders_cleaned
 	WHERE cancellation IS NULL
 	)
+--
+-- Present the result
 SELECT CONCAT (
 		'$'
 		,(
