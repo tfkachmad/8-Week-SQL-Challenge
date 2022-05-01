@@ -10,10 +10,10 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-2/)
 - [:mag: Entity Relationship Diagram](#mag-entity-relationship-diagram)
 - [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
 - [:pencil: Questions and Solution](#pencil-questions-and-solution)
-  - [A. Pizza Metrics](#a-pizza-metrics)
-  - [B. Runner and Customer Experience](#b-runner-and-customer-experience)
-  - [C. Ingredient Optimisation](#c-ingredient-optimisation)
-  - [D. Pricing and Ratings](#d-pricing-and-ratings)
+    - [A. Pizza Metrics](#a-pizza-metrics)
+    - [B. Runner and Customer Experience](#b-runner-and-customer-experience)
+    - [C. Ingredient Optimisation](#c-ingredient-optimisation)
+    - [D. Pricing and Ratings](#d-pricing-and-ratings)
 
 ---
 
@@ -113,10 +113,10 @@ Danny started by recruiting “runners” to deliver fresh pizza from Pizza Runn
 
 **Table 5: pizza_recipes**
 
-| pizza_id toppings |
-| :---------------- |
-| 1 1               | 2 | 3 | 4 | 5  | 6  | 8 | 10 |
-| 2 4               | 6 | 7 | 9 | 11 | 12 |
+| pizza_id | toppings                |
+| -------- | ----------------------- |
+| 1        | 1, 2, 3, 4, 5, 6, 8, 10 |
+| 2        | 4, 6, 7, 9, 11, 12      |
 
 </div>
 
