@@ -267,8 +267,6 @@
 5. Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients.
     1. For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
 
-    <br/>
-
     - Create a temp table, called `#customer_orders_long`, to get detailed order by the customer, including the customer id, pizza name, and pizza toppings. This is done by joining the `##customer_orders_cleaned` and `##pizza_recipes_cleaned` for each pizza_id, and `##pizza_names_cleaned` also for each pizza_id.
     - Crete another temp table, `#customer_exclusions_long` and `#customer_extras_long` to list every exclusions and extras for each pizza ordered by the customer.
     - Next, union the new `#customer_exclusions_long` table with the `#customer_orders_long` to find which topping are excluded from the pizza ordered. This is done by finding the rows that exist in both table. Or, simply duplicated after the union and put the result in aonther temp table called `#customer_reduced`
