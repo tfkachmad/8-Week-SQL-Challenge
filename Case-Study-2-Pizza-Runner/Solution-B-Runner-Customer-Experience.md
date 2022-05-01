@@ -6,7 +6,7 @@
     - Use `DATEPART()` function to extract the week from registration_date column in the runner table.
     - Count all rows and group it by that week result.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT DATEPART(WEEK, registration_date) AS [week]
@@ -15,17 +15,21 @@
     GROUP BY DATEPART(week, registration_date);
     ```
 
+    Output:
+
     | week | runner_signup |
     | :--- | :------------ |
     | 1    | 1             |
     | 2    | 2             |
     | 3    | 1             |
 
+    <br/>
+
 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
    - Use `DATEPART()` function to extract the minutes of pickup time each runner made from the `##runner_orders_cleaned` table.
    - Average each minutes and group the result by the runner_id.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT runner_id
@@ -34,17 +38,21 @@
     GROUP BY runner_id;
     ```
 
+    Output:
+
     | runner_id | avg_duration_minute |
     | :-------- | :------------------ |
     | 1         | 21                  |
     | 2         | 32                  |
     | 3         | 10                  |
 
+    <br/>
+
 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
    - Succesful order can be counted by how many `pickup_time` that is `NOT NULL`.
    - Count the column and group it by the runner_id from the `##runner_orders_cleaned` table.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT COUNT(*) AS pizza_ordered
@@ -59,6 +67,8 @@
         ,2 DESC;
     ```
 
+    Output:
+
     | pizza_ordered | prep_time_minute |
     | :------------ | :--------------- |
     | 3             | 30               |
@@ -72,13 +82,15 @@
 
     > The more the pizza ordered the more time it takes to prepare.
 
+    <br/>
+
 4. What was the average distance travelled for each customer?
 
    - Join the `##customer_orders_cleaned` table with the `##runner_orders_cleaned` to get the distance traveled to deliver pizza by each customer.
    - Aggregate the distance column to find the average distance travelled to deliver the pizza.
    - Group the result by the `customer_id`.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT customer.customer_id
@@ -90,6 +102,8 @@
     GROUP BY customer.customer_id;
     ```
 
+    Output:
+
     | customer_id | avg_distance_km |
     | :---------- | :-------------- |
     | 101         | 20.00           |
@@ -98,12 +112,14 @@
     | 104         | 10.00           |
     | 105         | 25.00           |
 
+    <br/>
+
 5. What was the difference between the longest and shortest delivery times for all orders?
 
    - Use `MAX()` function to get the longest delivery time and `MIN()` to get the shortest delivery times.
    - Substract the maximum value and the minimum value to get the difference.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT MAX(distance) - MIN(distance) AS distance_difference_km
@@ -111,16 +127,20 @@
     WHERE cancellation IS NULL;
     ```
 
+    Output:
+
     | duration_difference_minutes |
     | :-------------------------- |
     | 30                          |
+
+    <br/>
 
 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
 
    - Devide the distance and duration from ##runner_orders_cleaned table and multiply each result by 60 to get the speed in kmph.
    - Get the average of all speed result and group the result by runner_id.
 
-    <br/>
+    Code:
 
     ```sql
     SELECT runner_id
@@ -130,6 +150,8 @@
     GROUP BY runner_id;
     ```
 
+    Output:
+
     | runner_id | avg_speed_kmph |
     | :-------- | :------------- |
     | 1         | 45.54          |
@@ -138,6 +160,8 @@
 
     > runner_id 1 and 3 has relatively the same delivery speed. runner_id 2 is the fastest runner with average speed of 62.90kmph.
 
+    <br/>
+
 7. What is the successful delivery percentage for each runner?
    - Find the number of succesfull delivery using the condition if the cancellation column in `##runner_orders_cleaned` table is `NULL`.
    - Find the number of unsuccesfull delivery using the condition if the cancellation column in `##runner_orders_cleaned` table is `NOT NULL`.
@@ -145,7 +169,7 @@
    - Use `COALESCE()` function to check if there are NULL value from the calculation result, which mean either the runner has no succesfull delivery or the other way around.
    - Devide the number of succesfull delivery and the total delivery each runner made to get the percentage.
 
-    <br/>
+    Code:
 
     ```sql
     WITH delivery
@@ -174,6 +198,8 @@
     FROM delivery
     ORDER BY runner_id;
     ```
+
+    Output:
 
     | runner_id | successful_delivery |
     | :-------- | :------------------ |
