@@ -49,7 +49,7 @@ Danny created Foodie-Fi with a data driven mindset and wanted to ensure all futu
 
 </div>
 
-<br>
+<br/>
 
 <div align="center">
 
