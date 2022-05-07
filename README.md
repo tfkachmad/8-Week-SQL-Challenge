@@ -1,5 +1,5 @@
 <p align="left" width="100%">
-    <img width="10%" src="../8-Week-SQL-Challenge/images/data-with-danny-logo.png">
+    <img width="10%" src="./images/data-with-danny-logo.png">
 </p>
 
 # 8 Week SQL Challenge
