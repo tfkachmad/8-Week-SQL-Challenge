@@ -9,7 +9,7 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-3/)
 - [:briefcase: Business Case](#briefcase-business-case)
 - [:mag: Entity Relationship Diagram](#mag-entity-relationship-diagram)
 - [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
-- [:pencil: Questions and Solution](#pencil-questions-and-solution)
+- [:triangular_flag_on_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
   - [A. Customer Journey](#a-customer-journey)
   - [B. Data Analysis](#b-data-analysis)
 
@@ -82,7 +82,7 @@ Danny created Foodie-Fi with a data driven mindset and wanted to ensure all futu
 
 ---
 
-# :pencil: Questions and Solution
+# :triangular_flag_on_post: Questions and Solution
 
 ## A. Customer Journey
 
