@@ -114,7 +114,7 @@ The management team at Data Bank want to increase their total customer base - bu
 
 **Click** the badge below to view my solution for this set of questions.
 
-[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-4-Data-Bank/Solution-A-Customer-Journey.md)
+[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-4-Data-Bank/Solution-A-Customer-Node.md)
 
 ## B. Customer Transactions
 
