@@ -2401,12 +2401,12 @@
     - Next, filter only to get the first and second month by the row number that is `<= 2`.
     - Use `LEAD()` function to put the first and second month closing balance next to each other.
 
-    | customer_id | end_of_month | initial_closing | closing_balance |
-    |-------------|--------------|-----------------|-----------------|
-    | 1           | 2020-01-31   | 312             | -640            |
-    | 1           | 2020-03-31   | -640            | NULL            |
-    | 2           | 2020-01-31   | 549             | 610             |
-    | 2           | 2020-03-31   | 610             | NULL            |
+        | customer_id | end_of_month | initial_closing | closing_balance |
+        |-------------|--------------|-----------------|-----------------|
+        | 1           | 2020-01-31   | 312             | -640            |
+        | 1           | 2020-03-31   | -640            | NULL            |
+        | 2           | 2020-01-31   | 549             | 610             |
+        | 2           | 2020-03-31   | 610             | NULL            |
 
     - Next, find the percentage change from the `intial_closing` and the `closing_balance`.
     - Finally, find the percentage of how many customer increase their balance by 5% by deviding the number of customer that increase their balance by 5% based on the previous calculation and the total customer Data Bank have.
