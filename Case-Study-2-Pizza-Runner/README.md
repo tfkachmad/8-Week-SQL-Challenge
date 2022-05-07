@@ -9,7 +9,7 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-2/)
 - [:briefcase: Business Case](#briefcase-business-case)
 - [:mag: Entity Relationship Diagram](#mag-entity-relationship-diagram)
 - [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
-- [:pencil: Questions and Solution](#pencil-questions-and-solution)
+- [:triangular_flag_on_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
     - [A. Pizza Metrics](#a-pizza-metrics)
     - [B. Runner and Customer Experience](#b-runner-and-customer-experience)
     - [C. Ingredient Optimisation](#c-ingredient-optimisation)
@@ -145,7 +145,7 @@ Danny started by recruiting “runners” to deliver fresh pizza from Pizza Runn
 
 ---
 
-# :pencil: Questions and Solution
+# :triangular_flag_on_post: Questions and Solution
 
 ## A. Pizza Metrics
 
