@@ -35,7 +35,7 @@ The key business question he wants you to help him answer are the following:
 # :mag: Entity Relationship Diagram
 
 <p align="center" width="100%">
-    <img width="80%" src="../images/case-study-5-erd.png">
+    <img width="50%" src="../images/case-study-5-erd.png">
 </p>
 
 ---
