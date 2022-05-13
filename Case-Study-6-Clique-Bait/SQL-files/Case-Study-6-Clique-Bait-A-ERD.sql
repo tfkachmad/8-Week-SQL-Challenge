@@ -5,7 +5,7 @@
 --	Entity Relationship Diagram Result on dbdiagram.io
 --	https://dbdiagram.io/d/624fcdd42514c97903f34e48
 --
-TABLE users {  
+TABLE users {
     "user_id" INTEGER
     "cookie_id" VARCHAR(6)
     "start_date" TIMESTAMP
@@ -25,7 +25,7 @@ TABLE event_identifier {
     "event_name" VARCHAR(13)
 }
 
-TABLE campaign_identifier {  
+TABLE campaign_identifier {
     "campaign_id" INTEGER
     "products" VARCHAR(3)
     "campaign_name" VARCHAR(33)
@@ -33,7 +33,7 @@ TABLE campaign_identifier {
     "end_date" TIMESTAMP
 }
 
-TABLE page_hierarchy { 
+TABLE page_hierarchy {
     "page_id" INTEGER
     "page_name" VARCHAR(14)
     "product_category" VARCHAR(9)
