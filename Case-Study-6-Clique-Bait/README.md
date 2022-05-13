@@ -7,7 +7,6 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-6/)
 # :books: Table of Contents <!-- omit in toc -->
 
 - [:briefcase: Business Case](#briefcase-business-case)
-- [:mag: Entity Relationship Diagram](#mag-entity-relationship-diagram)
 - [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
 - [:triangular_flag_on_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
   - [A. Entity Relationshiop Diagram](#a-entity-relationshiop-diagram)
@@ -22,14 +21,6 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-6/)
 Clique Bait is not like your regular online seafood store - the founder and CEO Danny, was also a part of a digital data analytics team and wanted to expand his knowledge into the seafood industry!
 
 In this case study - you are required to support Danny’s vision and analyse his dataset and come up with creative solutions to calculate funnel fallout rates for the Clique Bait online store.
-
----
-
-# :mag: Entity Relationship Diagram
-
-<p align="center" width="100%">
-    <img width="60%" src="../images/case-study-5-erd.png">
-</p>
 
 ---
 
