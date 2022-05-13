@@ -221,8 +221,6 @@ Use your 2 new output tables - answer the following questions:
 
 1. Which product had the most views, cart adds and purchases?
 
-    - adfasdf
-
     Code:
 
     ```sql
