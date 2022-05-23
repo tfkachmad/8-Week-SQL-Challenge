@@ -12,7 +12,7 @@ Using this analysis approach - answer the following questions:
 
 1. What is the total sales for the 4 weeks before and after 2020-06-15? What is the growth or reduction rate in actual values and percentage of sales?
 
-    Code:
+    Query:
 
     ```sql
     DROP TABLE
@@ -118,7 +118,7 @@ Using this analysis approach - answer the following questions:
 
 2. What about the entire 12 weeks before and after?
 
-    Code:
+    Query:
 
     ```sql
     DROP TABLE
@@ -224,7 +224,7 @@ Using this analysis approach - answer the following questions:
 
 3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
 
-    Code:
+    Query:
 
     ```sql
     WITH sales_2018_cte
