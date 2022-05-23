@@ -4,9 +4,11 @@
 
 1. What are the top 3 products by total revenue before discount?
 
-    -
+    - First, find the total revenue for each product by aggregating the product from `qty` and `sales` using `SUM()` function and group the result for each product.
+    - Generate a row number for each product where each number representing the order of the total revenue from the highest to the lowest.
+    - Find the row number that is less than or equal to 3 to find the top 3 product with highest total revenue.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -45,9 +47,10 @@
 
 2. What is the total quantity, revenue and discount for each segment?
 
-    -
+    - The total quantity acquired by aggregating the `qty` column using `SUM()` function, the revenue acquired from aggregating the product of qty and price using `SUM()` function, and the discount acquired by aggregating the product of the revenue and the discount for each product using `SUM()` function.
+    - The result than grouped for each segment.
 
-    Code:
+    Query:
 
     ```sql
     WITH sub_CTE
@@ -84,9 +87,11 @@
 
 3. What is the top selling product for each segment?
 
-    -
+    - Find the highests quantity sold for each product for each segment by aggregating the `qty` column with `SUM()` function and group the result for each product for each segments.
+    - Generate a numbered column, `row_num`, that represent the order of total item sold for each product for each segment from highest to lowest.
+    - Show the result by finding the row `row_num` that equal to 1.
 
-    Code:
+    Query:
 
     ```sql
     WITH sold_CTE
@@ -131,9 +136,9 @@
 
 4. What is the total quantity, revenue and discount for each category?
 
-    -
+    - Use the same query as question 2. But, change the grouping result by the category rather than segment.
 
-    Code:
+    Query:
 
     ```sql
     WITH sub_CTE
@@ -172,9 +177,9 @@
 
 5. What is the top selling product for each category?
 
-    -
+    - Use the same query as question 3. But, group the aggregate result by the product for each category.
 
-    Code:
+    Query:
 
     ```sql
     WITH sold_CTE
@@ -217,9 +222,10 @@
 
 6. What is the percentage split of revenue by product for each segment?
 
-    -
+    - First, find the total revenue after discount each product for each segment by aggregating the revenue after discount for each product for each segment using `SUM()` function and group the result by product and segment.
+    - Calculate the percentage by dividing each product for each segment total revenue by the total revenue.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -282,9 +288,9 @@
 
 7. What is the percentage split of revenue by segment for each category?
 
-    -
+    - Use the same query as question 6. Change the aggregate grouping for segment and category.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -339,9 +345,9 @@
 
 8. What is the percentage split of total revenue by category?
 
-    -
+    - Use the same query as question 6. But only group the aggregate result by category.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -384,11 +390,12 @@
 
     <br/>
 
-9. What is the total transaction “penetration” for each product? (hint: penetration = number of transactions where at least 1 quantity of a product was purchased divided by total number of transactions)
+9. What is the total transaction “penetration” for each product? (hint: penetration = number of transactions where at least 1 quantity of a product was purchased divided by total number of transactions).
 
-    -
+    - First, find the number of transaction for each product by aggregating using COUNT() function and group the result for each category.
+    - Divide that value with the number of unique transaction Balanced Tree Clothing Co. ever had. This will be the value for each products penetration percentage.
 
-    Code:
+    Query:
 
     ```sql
     WITH trx_CTE
@@ -434,9 +441,12 @@
 
 10. What is the most common combination of at least 1 quantity of any 3 products in a 1 single transaction?
 
-    -
+    - First, generate a sub table that consist of only txn_id, product_id, and product_name.
+    - Join this table twice with itself where each join would match the `txn_id`, *meaning each product has to be in a same transaction*, but the `product_id` for the first/left table must be smaller than the second/right. This will result in a combination of 3 products for each transactions. Aggregate to find the number of transaction for each combination using `COUNT()` function and group the result by the product combination.
+    - Generate a numbered column that represent the number of transaction for each product combination from highest number of transation to the lowest, called `rn`.
+    - Show the result where `rn` is equal to 1.
 
-    Code:
+    Query:
 
     ```sql
     WITH product_CTE
