@@ -6,7 +6,7 @@
 
     - Aggregating the `qty` column with `SUM()` function and grouping the result by each `product_name` will generate the total quantity sold for each products.
 
-    Code:
+    Query:
 
     ```sql
     SELECT p.product_name
@@ -43,7 +43,7 @@
     - First, find the revenue by each products purchasesd using `(qty * price)` equation.
     - Aggregate the result using `SUM()` function and group the result by the `product_name`.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -86,7 +86,7 @@
 
     - Using the previous answer, but use `(qty * price * (CAST(discount AS FLOAT) / 100))` equation to get the discount amount for each product purchased.
 
-    Code:
+    Query:
 
     ```sql
     WITH discount_CTE
