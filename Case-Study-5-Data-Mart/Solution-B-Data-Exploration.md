@@ -6,7 +6,7 @@
 
     - Use `DATENAME()` function to find the day used for the `week_date` value.Then, find the distinct value from the result.
 
-    Code:
+    Query:
 
     ```sql
     SELECT DISTINCT DATENAME(WEEKDAY, week_date) AS [day]
@@ -26,7 +26,7 @@
     - Find the smallest `week_number` value using `MIN()` function and the largest value with `MAX()`.
     - The range of week number that are missing are that outside these range, or **below 13 (1-12)** and above **36 (37-52)**.
 
-    Code:
+    Query:
 
     ```sql
     SELECT MIN(week_number) AS earliest_week_number
@@ -47,7 +47,7 @@
     - Aggregate the `transactions` column with `SUM()` function to find the total transactions.
     - Group the result by the `calendar_year` or the year.
 
-    Code:
+    Query:
 
     ```sql
     SELECT calendar_year AS [year]
@@ -70,7 +70,7 @@
 
     - Aggregate the `sales` column using `SUM()` to find the total sales. Group the result by regions name and the month name that acquired using `DATENAME()` function on `week_date` column.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -152,7 +152,7 @@
 
     - `COUNT(*)` every rows in the table to find the number of transactions and group the result by each `platform` Data Mart use.
 
-    Code:
+    Query:
 
     ```sql
     SELECT [platform]
@@ -248,7 +248,7 @@
 
     - The result from the final CTE is displayed to get the result to answer the question.
 
-    Code:
+    Query:
 
     ```sql
     WITH sub_cte
@@ -329,9 +329,9 @@
 
 7. What is the percentage of sales by demographic for each year in the dataset?
 
-    - This question can be answered using code from the previous question with some change. First, rather than grouping by the `platform` this time group each results by the `demographic`. Also, change the month that used to produce each CTEs result by the `calendar_year`.
+    - This question can be answered using Query from the previous question with some change. First, rather than grouping by the `platform` this time group each results by the `demographic`. Also, change the month that used to produce each CTEs result by the `calendar_year`.
 
-    Code:
+    Query:
 
     ```sql
     WITH sub_cte
@@ -421,7 +421,7 @@
     - Create `sub_cte` CTE to find the sales for each `age_band` and `demographic` combination. Aggregate the `sales` column using `SUM()` function and group by the `age_band` and `demographic`. The result from this CTE is going to used to find the highest total sales based on the `age_band` and `demographic` combination later.
     - List the `age_band`, `demographic`, and the `total_sales` from the CTE, but filter the result also based on the the CTE, where only the `total_sales` that is equal to the highest `total_sales` from that CTE using `MAX()`.
 
-    Code:
+    Query:
 
     ```sql
     WITH sub_cte
@@ -540,7 +540,7 @@
 
     - Do the calculation based on the temp table to find the average transaction size for each year for Retail vs Shopify.
 
-    Code:
+    Query:
 
     ```sql
     DROP TABLE
