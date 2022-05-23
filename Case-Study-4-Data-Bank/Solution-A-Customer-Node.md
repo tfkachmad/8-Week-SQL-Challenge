@@ -6,7 +6,7 @@
 
     - Count the distinct values of `node_id` from `customer_nodes` table.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(DISTINCT node_id) AS nodes
@@ -26,7 +26,7 @@
     - Join the `customer_nodes` and the `regions` table to get the region of each customer's node.
     - Count the distinct values of `node_id` and group the result by the `region_name`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT r.region_name
@@ -56,7 +56,7 @@
     - Join the `customer_nodes` and the `regions` table to get the region of each customer's node.
     - Count the entire rows of `node_id` and group the result by the `region_name`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT r.region_name
@@ -96,7 +96,7 @@
 
     - Find the difference from the `start_node` `next_node_date` with `DATEDIFF()` and use the `AVG()` function to average the entire days differences.
 
-    Code:
+    Query:
 
     ```sql
     WITH starting_date
@@ -160,7 +160,7 @@
     - Find the difference from the `start_node` `next_node_date` with `DATEDIFF()` to find the days differences.
     - To find the median, 80th and 95th percentile from the days differences, `PERCENTILE_CONT()` function is going to be used.
 
-    Code:
+    Query:
 
     ```sql
     WITH starting_date
