@@ -7,7 +7,7 @@
     - Count the distinct value of each `customer_id` to find the unique counts and sum the `txn_amount` to find the total.
     - Group the final result by the `txn_type`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT txn_type
@@ -31,7 +31,7 @@
 
     - Count all rows of each `customer_id` to find the  counts and sum the `txn_amount` to find the total deposit of each customer. Filter the result by the `txn_type` equal `deposit` and group the result by each `customer_id`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT customer_id
@@ -561,7 +561,7 @@
    - Next, count the number of `deposit`, `purchase` and `withdrawal` using `COUNT(CASE WHEN)` to find each transaction type.
    - Count all rows and filter the result according to what the question asked, which is **customer with 1 deposit and either 1 purchase or 1 withdrawal in a single month**. Group the result by the month that already got earlier.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -627,7 +627,7 @@
    - Next, sum the total of each customer transactions and group the result by their `customer_id` and the `end_of_month` result before.
    - Finally, get the running total for customer transactions using `SUM()` function with `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` argument to do this.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -2395,7 +2395,7 @@
 
 5. What is the percentage of customers who increase their closing balance by more than 5%?
 
-    - Use the previous question code to solve this question. Add the result into a temp table called `monthly_balance`.
+    - Use the previous question Query to solve this question. Add the result into a temp table called `monthly_balance`.
     - The increase of closing balance will be calculated based on the increase of their balance on customer first and second month balance.
     - To do that, first use `ROW_NUMBER()` window function togive each rows a number. Each number will be partitioned by each customer_id and ordered by the date.
     - Next, filter only to get the first and second month by the row number that is `<= 2`.
@@ -2411,7 +2411,7 @@
     - Next, find the percentage change from the `intial_closing` and the `closing_balance`.
     - Finally, find the percentage of how many customer increase their balance by 5% by deviding the number of customer that increase their balance by 5% based on the previous calculation and the total customer Data Bank have.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
