@@ -31,7 +31,7 @@ In a single query, perform the following operations and generate a new table in 
 
 - Generate a new `avg_transaction` column as the `sales` value divided by `transactions` rounded to 2 decimal places for each record
 
-    Code:
+    Query:
 
     ```sql
     -- Create new table, clean_weekly_sales
