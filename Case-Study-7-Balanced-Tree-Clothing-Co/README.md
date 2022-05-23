@@ -13,6 +13,7 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-7/)
   - [B. Transaction Analysis](#b-transaction-analysis)
   - [C. Product Analysis](#c-product-analysis)
   - [D. Reporting Challenge](#d-reporting-challenge)
+  - [E. Bonus Question](#e-bonus-question)
 
 ---
 
@@ -184,8 +185,6 @@ Danny, the CEO of this trendy fashion company has asked you to assist the teamâ€
 <details>
 <summary>Questions</summary>
 
-Write a single SQL script that combines all of the previous questions into a scheduled report that the Balanced Tree team can run at the beginning of each month to calculate the previous monthâ€™s values.
-
 Imagine that the Chief Financial Officer (which is also Danny) has asked for all of these questions at the end of every month.
 
 He first wants you to generate the data for January only - but then he also wants you to demonstrate that you can easily run the samne analysis for February without many changes (if at all).
@@ -197,3 +196,20 @@ Feel free to split up your final outputs into as many tables as you need - but b
 **Click** the badge below to view my solution for this set of questions.
 
 [![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-7-Balanced-Tree-Clothing-Co/Solution-D-Reporting-Challenge.md)
+
+## E. Bonus Question
+
+<details>
+<summary>Questions</summary>
+
+Use a single SQL query to transform the `product_hierarchy` and `product_prices` datasets to the product_details table.
+
+Hint: you may want to consider using a recursive CTE to solve this problem!
+
+</details>
+
+**Click** the badge below to view my solution for this question.
+
+[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-7-Balanced-Tree-Clothing-Co/Solution-E-Bonus-Question.md)
+
+---
