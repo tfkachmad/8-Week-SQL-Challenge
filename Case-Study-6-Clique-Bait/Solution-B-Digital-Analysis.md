@@ -6,7 +6,7 @@
 
     - Counting the distinct values of `user_id` will show the number of Clique Bait users.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(DISTINCT [user_id]) AS users_count
@@ -26,7 +26,7 @@
     - First, find the number of `cookie_id` of each user by aggregate the `cookie_id` using `COUNT()` function and group the result by the `user_id`.
     - Use `AVG()` on the result to get the average result.
 
-    Code:
+    Query:
 
     ```sql
     WITH user_cookies_CTE
@@ -53,7 +53,7 @@
     - Find the month name using `DATENAME(`) function.
     - Aggregate the unique value from `visit_id` with `COUNT()` function and group the result by the month name.
 
-    Code:
+    Query:
 
     ```sql
     WITH month_cte
@@ -89,7 +89,7 @@
     - JOIN the event_identifier with the events table to get `event_name` column.
     - `COUNT(*)` the resulted table to find the number of events and group the result by the `event_name`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT ei.event_name
@@ -149,7 +149,7 @@
         ```
 
     <details>
-    <summary>Code</summary>
+    <summary>Query</summary>
 
     ```sql
     WITH purchase_CTE
@@ -236,7 +236,7 @@
         ```
 
     <details>
-    <summary>Code</summary>
+    <summary>Query</summary>
 
     ```sql
     WITH purchase_CTE
@@ -321,7 +321,7 @@
         ```
 
     <details>
-    <summary>Code</summary>
+    <summary>Query</summary>
 
     ```sql
     WITH pages_view_CTE
@@ -400,7 +400,7 @@
         ```
 
     <details>
-    <summary>Code</summary>
+    <summary>Query</summary>
 
     ```sql
     WITH views_CTE
@@ -496,7 +496,7 @@
         ```
 
     <details>
-    <summary>Code</summary>
+    <summary>Query</summary>
 
     ```sql
     WITH purchase_CTE
