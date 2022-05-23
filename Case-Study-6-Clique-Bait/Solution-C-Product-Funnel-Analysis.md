@@ -221,7 +221,7 @@ Use your 2 new output tables - answer the following questions:
 
 1. Which product had the most views, cart adds and purchases?
 
-    Code:
+    Query:
 
     ```sql
     -- Finding the maximum from views_count, added_to_cart_count, purchase_count column
@@ -280,7 +280,7 @@ Use your 2 new output tables - answer the following questions:
 
     - For this question, the products that are least purchased by the users are the products that most likely to be abandoned.
 
-    Code:
+    Query:
 
     ```sql
     WITH min_CTE
@@ -315,7 +315,7 @@ Use your 2 new output tables - answer the following questions:
     - To answer this question, find the view to purchase ration percentage for every product.
     - Order the result and show the TOP 1 from the `products` and its `view_to_purchase_percentage`.
 
-    Code:
+    Query:
 
     ```sql
     WITH percentage_CTE
@@ -343,7 +343,7 @@ Use your 2 new output tables - answer the following questions:
     - First, find every conversion rate for each visit.
     - Use `AVG()` function to find the average from the result.
 
-    Code:
+    Query:
 
     ```sql
     WITH view_to_cart_CTE
@@ -369,7 +369,7 @@ Use your 2 new output tables - answer the following questions:
     - First, find every conversion rate for each visit.
     - Use `AVG()` function to find the average from the result.
 
-    Code:
+    Query:
 
     ```sql
     WITH cart_add_to_purchase_CTE
