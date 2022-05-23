@@ -17,7 +17,7 @@
 
         to get the expected result.
 
-    Code:
+    Query:
 
     ```sql
     SELECT piz.pizza_name
@@ -53,7 +53,7 @@
     - Count each `topping_id` from the resulted table and group it by the topping_name.
     - Order the result by the count in descending order and get the higher value using `TOP 1`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT TOP 1 topp.topping_name
@@ -78,7 +78,7 @@
 
     - Use the same way as the previous question, but this time with exclusion column.
 
-    Code:
+    Query:
 
     ```sql
     SELECT TOP 1 topp.topping_name
@@ -125,7 +125,7 @@
 
     - Concat the formatted result with the pizza name to get the final result.
 
-    Code:
+    Query:
 
     ```sql
     WITH breakdown_cte
@@ -284,7 +284,7 @@
         - Use `STRING_AGG()` function just like the first question to combine every row from the resulted.
         - Concatenate the pizza name and the `STRING_AGG()` function result.
 
-    Code:
+    Query:
 
     ```sql
     DROP TABLE
@@ -499,7 +499,7 @@
     - Count `topping_id` from this table and group the result by the `topping_name`.
     - Order the result by the `topping_name` in descending order.
 
-    Code:
+    Query:
 
     ```sql
     SELECT topping_name
