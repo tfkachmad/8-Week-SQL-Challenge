@@ -8,7 +8,7 @@
     - Join that table with ##customer_orders_cleaned to get every pizza ordered by customer.
     - Sum the price for each pizza ordered to get the profit.
 
-    Code:
+    Query:
 
     ```sql
     -- Create #pizza_price table
@@ -50,7 +50,7 @@
     - Create a CTE to find every pizza ever ordered with extras cheese as topping and count how many they are.
     - Add the result from the two calculation to get the final profit.
 
-    Code:
+    Query:
 
     ```sql
     WITH pizza_profit
@@ -101,7 +101,7 @@
 
     - `LEFT JOIN` the first CTE and the second one to get the final table.
 
-    Code:
+    Query:
 
     ```sql
     -- Create table order_rating;
@@ -179,7 +179,7 @@
     - average_speed can be obtained with this formula, `ROUND(run.distance / (CONVERT(FLOAT, (run.duration)) / 60), 2)` that devide the distance traveled by each runner and the duration they take to deliver the pizza. The resulting formula would be in *kmph* and rounded to two decimal format.
     - The last step is to count the pizza for each `order_id` by basically group all columns that already obtained before.
 
-    Code:
+    Query:
 
     ```sql
     DROP TABLE
@@ -261,7 +261,7 @@
     - Next, use this formula to get the paid for each runner `(SUM(distance) * 0.3)` for every kilometre they traveled.
     - Substract the result from the first calculation to get the net profit Pizza Runner made.
 
-    Code:
+    Query:
 
     ```sql
     WITH pizza_profit
