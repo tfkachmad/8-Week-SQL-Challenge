@@ -5,7 +5,7 @@
 1. How many pizzas were ordered?
     - Count total rows from the `##customer_orders_cleaned` table, because each rows representing each pizza ordered by customers.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(*) AS total_order
@@ -23,7 +23,7 @@
 2. How many unique customer orders were made?
    - Count the distinct `custumer_id` from the `##customer_orders_cleaned` table.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(DISTINCT customer_id) AS unique_orders
@@ -42,7 +42,7 @@
    - Succesful order can be counted by how many pickup_time that is not `NULL`.
    - Count the column and group it by the runner_id from the `##runner_orders_cleaned` table.
 
-    Code:
+    Query:
 
     ```sql
     SELECT runner_id
@@ -65,7 +65,7 @@
    - Join the `##customer_orders_cleaned` table with the `##pizza_names_cleaned` to get the pizza name from each customer's order.
    - Count all the orders and group it by the pizza_name.
 
-    Code:
+    Query:
 
     ```sql
     SELECT pizza.pizza_name
@@ -89,7 +89,7 @@
    - Join the `##customer_orders_cleaned` table with the `##pizza_names_cleaned` to get the pizza name from each customer's order.
    - Count each types of pizza by using expression to find if the ordered pizza is Meatlovers or not. Also, do the same for the Vegetarian pizza type and create columns for each pizza types.
 
-    Code:
+    Query:
 
     ```sql
     SELECT customer_id
@@ -125,7 +125,7 @@
    - Create a CTE to find the number of pizza ordered within each order_id from `##customer_orders_cleaned` table.
    - Use that CTE to find the maximum number of pizza ordered.
 
-    Code:
+    Query:
 
     ```sql
     SELECT MAX(num_pizza) AS max_pizza_delivered
@@ -149,7 +149,7 @@
    - Count every pizza ordered from `##customer_orders_cleaned` with condition that had change, where either the pizza had NULL exclusions and non NULL extras, the pizza had non NULL exclusions and NULL extras, or both are non NULL.
    - Count the pizza ordered where that both exclusions and extras is NULL to find the pizza ordered had no change.
 
-    Code:
+    Query:
 
     ```sql
     SELECT customer_id
@@ -194,7 +194,7 @@
 8. How many pizzas were delivered that had both exclusions and extras?
    - Same as the previous question, but only find the condition that both exclusions and extras column is NOT NULL.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(*) AS pizza_with_exclusions_extras
@@ -216,7 +216,7 @@
     - Use `DATEPART()` function to find the day and hour to find the volume of each day and hour pizza ordered.
     - Group the result by the day and hour.
 
-    Code:
+    Query:
 
     ```sql
     SELECT DATEPART(DAY, order_time) AS [day]
@@ -248,7 +248,7 @@
     - Use `DATEPART()` function to find the week and day to find the volume of each day and hour pizza ordered.
     - Group the result by the week and day.
 
-    Code:
+    Query:
 
     ```sql
     SELECT DATEPART(WEEK, order_time) AS [week]
@@ -271,3 +271,5 @@
     | 2    | 9    | 1              |
     | 2    | 10   | 1              |
     | 2    | 11   | 2              |
+
+---
