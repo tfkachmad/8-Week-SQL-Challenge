@@ -6,7 +6,7 @@
     - Use `DATEPART()` function to extract the week from registration_date column in the runner table.
     - Count all rows and group it by that week result.
 
-    Code:
+    Query:
 
     ```sql
     SELECT DATEPART(WEEK, registration_date) AS [week]
@@ -29,7 +29,7 @@
    - Use `DATEPART()` function to extract the minutes of pickup time each runner made from the `##runner_orders_cleaned` table.
    - Average each minutes and group the result by the runner_id.
 
-    Code:
+    Query:
 
     ```sql
     SELECT runner_id
@@ -52,7 +52,7 @@
    - Succesful order can be counted by how many `pickup_time` that is `NOT NULL`.
    - Count the column and group it by the runner_id from the `##runner_orders_cleaned` table.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(*) AS pizza_ordered
@@ -90,7 +90,7 @@
    - Aggregate the distance column to find the average distance travelled to deliver the pizza.
    - Group the result by the `customer_id`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT customer.customer_id
@@ -119,7 +119,7 @@
    - Use `MAX()` function to get the longest delivery time and `MIN()` to get the shortest delivery times.
    - Substract the maximum value and the minimum value to get the difference.
 
-    Code:
+    Query:
 
     ```sql
     SELECT MAX(distance) - MIN(distance) AS distance_difference_km
@@ -140,7 +140,7 @@
    - Devide the distance and duration from ##runner_orders_cleaned table and multiply each result by 60 to get the speed in kmph.
    - Get the average of all speed result and group the result by runner_id.
 
-    Code:
+    Query:
 
     ```sql
     SELECT runner_id
@@ -169,7 +169,7 @@
    - Use `COALESCE()` function to check if there are NULL value from the calculation result, which mean either the runner has no succesfull delivery or the other way around.
    - Devide the number of succesfull delivery and the total delivery each runner made to get the percentage.
 
-    Code:
+    Query:
 
     ```sql
     WITH delivery
@@ -206,3 +206,5 @@
     | 1         | 100%                |
     | 2         | 75%                 |
     | 3         | 50%                 |
+
+---
