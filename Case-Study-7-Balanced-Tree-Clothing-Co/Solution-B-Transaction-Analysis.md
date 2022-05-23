@@ -6,7 +6,7 @@
 
     - Count the distinct values of `txn_id` to find the number of unique transations.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(DISTINCT txn_id) AS unique_transaction_cnt
@@ -26,7 +26,7 @@
     - First, find the distinct product for each transactions ever happened using `COUNT(DISTINCT prod_id)` and group the result by the transaction id (`txn_id`).
     - Next, use `AVG()` function on the count result to get the average unique products in each transactions.
 
-    Code:
+    Query:
 
     ```sql
     WITH products_CTE
@@ -53,7 +53,7 @@
     - The revenue is calculated by finding the total revenue for each transactions.
     - Then, use `PERCENTILE_CONT()` function on the total revenue result for each percentile asked by the question to get the result.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
@@ -98,7 +98,7 @@
     - Find discount value for each transactions by aggregating `(qty * price * (CAST(discount AS FLOAT) / 100))` equation using `SUM()` function and group it by the transaction id (`txn_id`).
     - Use `AVG()` on the result to find the average discount value per transactions.
 
-    Code:
+    Query:
 
     ```sql
     WITH discount_CTE
@@ -126,7 +126,7 @@
     - Use `COUNT(*)` to find the number of transactions for each members vs non_members.
     - Use the number of transaction for each member / non-members and devide it with the total transactions Balanced Tree Clothing Co. ever had to get the percentage split for members vs non-members.
 
-    Code:
+    Query:
 
     ```sql
     WITH trx_CTE
@@ -176,7 +176,7 @@
     - use the `(qty * price) - (qty * price * (CAST(discount AS FLOAT) / 100))` equation to get the revenue for transactions.
     - Aggregate the result from the equation using AVG() function and group the result by members / non-members to get the avereage revenue.
 
-    Code:
+    Query:
 
     ```sql
     WITH revenue_CTE
