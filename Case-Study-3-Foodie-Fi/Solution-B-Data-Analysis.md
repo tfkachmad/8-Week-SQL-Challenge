@@ -6,7 +6,7 @@
 
     - Counting how many distinct `customer_id` values from the `subscriptions` table will show how many customer Foodie-Fi ever had.
 
-    Code:
+    Query:
 
     ```sql
     SELECT COUNT(DISTINCT customer_id) AS customers
@@ -28,7 +28,7 @@
     - Filter the plan by `trial` plan.
     - Group the result by the month number and the month name.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -74,7 +74,7 @@
    - Filter the result by the year after 2020 `start_date` using `DATEPART()` function.
    - Group the result by the `plan_id` and the `plan_name`.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -113,7 +113,7 @@
    - Next, create another CTE to calculate the percentage of customer that have churned.
    - Format the result to match what the question asked.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -157,7 +157,7 @@
    - Next, use the result to find customers that have trial on their `plan_name` plan and `churn` plan name from the first result.
    - Calculate the percentage by dividing the result of how many customer have churned after their initial membership and the total of distinct customers.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -227,7 +227,7 @@
 
     - Count all rows and group the result by the `next_plan`.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -293,7 +293,7 @@
    - Next, find the total of customers Foodie-Fi ever had.
    - Finally, devide the number of customers from each plans with the total customer to find ther percentage.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
@@ -348,7 +348,7 @@
    - Join the subscriptions table and the plans table to show the plan_name each customer took.
    - Count each rows and group it by each plan_name. Filter the result to only show the date from 2020 using `DATEPART()` function on `start_date` column and only the plan_name that is `pro annual`.
 
-    Code:
+    Query:
 
     ```sql
     SELECT p.plan_name
@@ -375,7 +375,7 @@
     - Use the `DATEDIFF()` function to find the difference from each customer `start_date` from both CTE.
     - Finally, find the average of all the `DATEDIFF()` result to get the final result.
 
-    Code:
+    Query:
 
     ```sql
     WITH trial
@@ -416,7 +416,7 @@
     - Rather than only showing the average days, find where each `DATEDIFF()` function result laid by creating bins to breakdown the day periods. This can be achieved using `CASE-WHEN` staatement.
     - Finally, count and group the days perions to get the final result.
 
-    Code:
+    Query:
 
     ```sql
     WITH trial
@@ -544,7 +544,7 @@
     - Using the result, find which customer have `plan_name` that is `pro monthly` and have `next_plan` that is `basic monthly`.
     - Count the result based on the filter.
 
-    Code:
+    Query:
 
     ```sql
     WITH cte
