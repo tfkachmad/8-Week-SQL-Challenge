@@ -327,3 +327,148 @@
     | ----------- | ------------ |
     | A           | 1370         |
     | B           | 1260         |
+
+## Bonus Question
+
+### Join All The Things
+
+The following questions are related creating basic data tables that Danny and his team can use to quickly derive insights without needing to join the underlying tables using SQL.
+
+Recreate the following table output using the available data:
+
+<details>
+<summary>Click to expand</summary>
+
+| customer_id | order_date | product_name | price | member |
+| ----------- | ---------- | ------------ | ----- | ------ |
+| A           | 2021-01-01 | curry        | 15    | N      |
+| A           | 2021-01-01 | sushi        | 10    | N      |
+| A           | 2021-01-07 | curry        | 15    | Y      |
+| A           | 2021-01-10 | ramen        | 12    | Y      |
+| A           | 2021-01-11 | ramen        | 12    | Y      |
+| A           | 2021-01-11 | ramen        | 12    | Y      |
+| B           | 2021-01-01 | curry        | 15    | N      |
+| B           | 2021-01-02 | curry        | 15    | N      |
+| B           | 2021-01-04 | sushi        | 10    | N      |
+| B           | 2021-01-11 | sushi        | 10    | Y      |
+| B           | 2021-01-16 | ramen        | 12    | Y      |
+| B           | 2021-02-01 | ramen        | 12    | Y      |
+| C           | 2021-01-01 | ramen        | 12    | N      |
+| C           | 2021-01-01 | ramen        | 12    | N      |
+| C           | 2021-01-07 | ramen        | 12    | N      |
+
+</details>
+
+- Query:
+
+    ```sql
+    DROP TABLE
+    IF EXISTS #all_table_join;
+        SELECT sales_menu.customer_id
+            ,sales_menu.order_date
+            ,sales_menu.product_name
+            ,sales_menu.price
+            ,member.join_date
+            ,CASE
+                WHEN member.join_date IS NOT NULL
+                    AND sales_menu.order_date >= member.join_date
+                    THEN 'Y'
+                WHEN member.join_date IS NOT NULL
+                    AND sales_menu.order_date < member.join_date
+                    THEN 'N'
+                ELSE 'N'
+                END AS member
+        INTO #all_table_join
+        FROM #sales_menu_table AS sales_menu
+        LEFT JOIN dannys_diner.members AS member
+            ON sales_menu.customer_id = member.customer_id;
+    ```
+
+- Result:
+
+    | customer_id | order_date | product_name | price | join_date  | member |
+    | ----------- | ---------- | ------------ | ----- | ---------- | ------ |
+    | A           | 2021-01-01 | sushi        | 10    | 2021-01-07 | N      |
+    | A           | 2021-01-01 | curry        | 15    | 2021-01-07 | N      |
+    | A           | 2021-01-07 | curry        | 15    | 2021-01-07 | Y      |
+    | A           | 2021-01-10 | ramen        | 12    | 2021-01-07 | Y      |
+    | A           | 2021-01-11 | ramen        | 12    | 2021-01-07 | Y      |
+    | A           | 2021-01-11 | ramen        | 12    | 2021-01-07 | Y      |
+    | B           | 2021-01-01 | curry        | 15    | 2021-01-09 | N      |
+    | B           | 2021-01-02 | curry        | 15    | 2021-01-09 | N      |
+    | B           | 2021-01-04 | sushi        | 10    | 2021-01-09 | N      |
+    | B           | 2021-01-11 | sushi        | 10    | 2021-01-09 | Y      |
+    | B           | 2021-01-16 | ramen        | 12    | 2021-01-09 | Y      |
+    | B           | 2021-02-01 | ramen        | 12    | 2021-01-09 | Y      |
+    | C           | 2021-01-01 | ramen        | 12    | NULL       | N      |
+    | C           | 2021-01-01 | ramen        | 12    | NULL       | N      |
+    | C           | 2021-01-07 | ramen        | 12    | NULL       | N      |
+
+<br/>
+
+### Rank All The Things
+
+Danny also requires further information about the ranking of customer products, but he purposely does not need the ranking for non-member purchases so he expects null ranking values for the records when customers are not yet part of the loyalty program.
+
+<details>
+<summary>Click to expand</summary>
+
+| customer_id | order_date | product_name | price | member | ranking |
+| ----------- | ---------- | ------------ | ----- | ------ | ------- |
+| A           | 2021-01-01 | curry        | 15    | N      | null    |
+| A           | 2021-01-01 | sushi        | 10    | N      | null    |
+| A           | 2021-01-07 | curry        | 15    | Y      | 1       |
+| A           | 2021-01-10 | ramen        | 12    | Y      | 2       |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3       |
+| A           | 2021-01-11 | ramen        | 12    | Y      | 3       |
+| B           | 2021-01-01 | curry        | 15    | N      | null    |
+| B           | 2021-01-02 | curry        | 15    | N      | null    |
+| B           | 2021-01-04 | sushi        | 10    | N      | null    |
+| B           | 2021-01-11 | sushi        | 10    | Y      | 1       |
+| B           | 2021-01-16 | ramen        | 12    | Y      | 2       |
+| B           | 2021-02-01 | ramen        | 12    | Y      | 3       |
+| C           | 2021-01-01 | ramen        | 12    | N      | null    |
+| C           | 2021-01-01 | ramen        | 12    | N      | null    |
+| C           | 2021-01-07 | ramen        | 12    | N      | null    |
+
+</details>
+
+- Query:
+
+    ```sql
+    DROP TABLE
+    IF EXISTS #all_table_join_rank;
+        SELECT *
+            ,CASE
+                WHEN member LIKE 'Y'
+                    THEN RANK() OVER (
+                            PARTITION BY customer_id
+                            ,member ORDER BY order_date
+                            )
+                ELSE NULL
+                END AS ranking
+        INTO #all_table_join_rank
+        FROM #all_table_join;
+    ```
+
+- Result:
+
+    | customer_id | order_date | product_name | price | join_date  | member | ranking |
+    | ----------- | ---------- | ------------ | ----- | ---------- | ------ | ------- |
+    | A           | 2021-01-01 | sushi        | 10    | 2021-01-07 | N      | NULL    |
+    | A           | 2021-01-01 | curry        | 15    | 2021-01-07 | N      | NULL    |
+    | A           | 2021-01-07 | curry        | 15    | 2021-01-07 | Y      | 1       |
+    | A           | 2021-01-10 | ramen        | 12    | 2021-01-07 | Y      | 2       |
+    | A           | 2021-01-11 | ramen        | 12    | 2021-01-07 | Y      | 3       |
+    | A           | 2021-01-11 | ramen        | 12    | 2021-01-07 | Y      | 3       |
+    | B           | 2021-01-01 | curry        | 15    | 2021-01-09 | N      | NULL    |
+    | B           | 2021-01-02 | curry        | 15    | 2021-01-09 | N      | NULL    |
+    | B           | 2021-01-04 | sushi        | 10    | 2021-01-09 | N      | NULL    |
+    | B           | 2021-01-11 | sushi        | 10    | 2021-01-09 | Y      | 1       |
+    | B           | 2021-01-16 | ramen        | 12    | 2021-01-09 | Y      | 2       |
+    | B           | 2021-02-01 | ramen        | 12    | 2021-01-09 | Y      | 3       |
+    | C           | 2021-01-01 | ramen        | 12    | NULL       | N      | NULL    |
+    | C           | 2021-01-01 | ramen        | 12    | NULL       | N      | NULL    |
+    | C           | 2021-01-07 | ramen        | 12    | NULL       | N      | NULL    |
+
+---
