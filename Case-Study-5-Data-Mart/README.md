@@ -13,6 +13,7 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-5/)
   - [A. Data Cleansing](#a-data-cleansing)
   - [B. Data Exploration](#b-data-exploration)
   - [C. Before & After Analysis](#c-before--after-analysis)
+  - [D. Bonus Question](#d-bonus-question)
 
 ---
 
@@ -150,3 +151,24 @@ Using this analysis approach - answer the following questions:
 **Click** the badge below to view my solution for this set of questions.
 
 [![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-5-Data-Mart/Solution-C-Before-After-Analysis.md)
+
+## D. Bonus Question
+
+<details>
+<summary>Questions</summary>
+
+Which areas of the business have the highest negative impact in sales metrics performance in 2020 for the 12 week before and after period?
+
+- `region`
+- `platform`
+- `age_band`
+- `demographic`
+- `customer_type`
+
+Do you have any further recommendations for Danny’s team at Data Mart or any interesting insights based off this analysis?
+
+</details>
+
+**Click** the badge below to view my solution for this set of questions.
+
+[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-5-Data-Mart/Solution-D-Bonus-Question.md)
