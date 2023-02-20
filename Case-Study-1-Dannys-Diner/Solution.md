@@ -4,7 +4,7 @@
 
 ## :tada: Solution
 
-1. What is the total amount each customer spent at the restaurant?  
+1. What is the total amount each customer spent at the restaurant?
 
     ```sql
     SELECT
@@ -23,9 +23,9 @@
     |------------|---------------|
     | A          | 76            |
     | B          | 74            |
-    | C          | 36            |  
-
-2. How many days has each customer visited the  restaurant?  
+    | C          | 36            |
+  
+2. How many days has each customer visited the  restaurant?
 
     ```sql
     SELECT
@@ -37,13 +37,13 @@
         1;
     ```
 
-    | customer | days_visited |
-    | -------- | ------------ |
-    | A        | 4            |
-    | B        | 6            |
-    | C        | 2            |  
+    | "customer_id" | "visit_num" |
+    |---------------|-------------|
+    | A             | 4           |
+    | B             | 6           |
+    | C             | 2           |
 
-3. What was the first item from the menu purchased by each customer?  
+3. What was the first item from the menu purchased by each customer?
 
     ```sql
     SELECT DISTINCT
@@ -65,9 +65,9 @@
     | A             | curry            |
     | A             | sushi            |
     | B             | curry            |
-    | C             | ramen            |  
+    | C             | ramen            |
 
-4. What is the most purchased item on the menu and how many times was it purchased by all customers?  
+4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 
     ```sql
     SELECT
@@ -85,9 +85,9 @@
 
     | "product_name" | "sold_total" |
     |----------------|--------------|
-    | ramen          | 8            |  
+    | ramen          | 8            |
 
-5. Which item was the most popular for each customer?  
+5. Which item was the most popular for each customer?
 
     ```sql
     WITH product_cte AS (
@@ -125,9 +125,9 @@
     | B             | sushi          |
     | B             | curry          |
     | B             | ramen          |
-    | C             | ramen          |  
+    | C             | ramen          |
 
-6. Which item was purchased first by the customer after they became a member?  
+6. Which item was purchased first by the customer after they became a member?
 
     ```sql
     WITH sales_cte AS (
@@ -156,9 +156,9 @@
     | "customer_id" | "product_name" |
     |---------------|----------------|
     | A             | curry          |
-    | B             | sushi          |  
+    | B             | sushi          |
 
-7. Which item was purchased just before the customer became a member?  
+7. Which item was purchased just before the customer became a member?
 
     ```sql
     WITH sales_cte AS (
@@ -188,7 +188,7 @@
     |---------------|----------------|
     | A             | sushi          |
     | A             | curry          |
-    | B             | sushi          |  
+    | B             | sushi          |
 
 8. What is the total items and amount spent for each member before they became a member?
 
@@ -217,7 +217,7 @@
     | A             | 2             | 25            |
     | B             | 3             | 40            |
 
-9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?  
+9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 
     ```sql
     SELECT
@@ -241,9 +241,9 @@
     |---------------|----------------|
     | A             | 860            |
     | B             | 940            |
-    | C             | 360            |  
+    | C             | 360            |
 
-10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?  
+10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 
     ```sql
     WITH sales_cte AS (
@@ -281,7 +281,7 @@
     | "customer_id" | "points_total" |
     |---------------|----------------|
     | A             | 1370           |
-    | B             | 820            |  
+    | B             | 820            |
 
 ## Bonus Question
 
@@ -355,7 +355,7 @@ Recreate the following table output using the available data:
     | B             | 2021-02-01   | ramen          | 12      | Y        |
     | C             | 2021-01-01   | ramen          | 12      | N        |
     | C             | 2021-01-01   | ramen          | 12      | N        |
-    | C             | 2021-01-07   | ramen          | 12      | N        |  
+    | C             | 2021-01-07   | ramen          | 12      | N        |
 
 ### Rank All The Things
 
