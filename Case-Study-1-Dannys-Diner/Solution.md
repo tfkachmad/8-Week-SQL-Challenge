@@ -45,6 +45,8 @@
     | B             | 6           |
     | C             | 2           |
 
+    <br>
+
 3. What was the first item from the menu purchased by each customer?
 
     ```sql
@@ -69,6 +71,8 @@
     | B             | curry            |
     | C             | ramen            |
 
+    <br>
+
 4. What is the most purchased item on the menu and how many times was it purchased by all customers?
 
     ```sql
@@ -88,6 +92,8 @@
     | "product_name" | "sold_total" |
     |----------------|--------------|
     | ramen          | 8            |
+
+    <br>
 
 5. Which item was the most popular for each customer?
 
@@ -129,6 +135,8 @@
     | B             | ramen          |
     | C             | ramen          |
 
+    <br>
+
 6. Which item was purchased first by the customer after they became a member?
 
     ```sql
@@ -159,6 +167,8 @@
     |---------------|----------------|
     | A             | curry          |
     | B             | sushi          |
+
+    <br>
 
 7. Which item was purchased just before the customer became a member?
 
@@ -192,6 +202,8 @@
     | A             | curry          |
     | B             | sushi          |
 
+    <br>
+
 8. What is the total items and amount spent for each member before they became a member?
 
     - Find each customer data from `#sales_menu_table` that occured before they become member from `member` table
@@ -219,6 +231,8 @@
     | A             | 2             | 25            |
     | B             | 3             | 40            |
 
+    <br>
+
 9. If each $1 spent equates to 10 points and sushi has a 2x points multiplier - how many points would each customer have?
 
     ```sql
@@ -244,6 +258,8 @@
     | A             | 860            |
     | B             | 940            |
     | C             | 360            |
+
+    <br>
 
 10. In the first week after a customer joins the program (including their join date) they earn 2x points on all items, not just sushi - how many points do customer A and B have at the end of January?
 
