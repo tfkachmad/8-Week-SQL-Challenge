@@ -1,13 +1,13 @@
 CREATE SCHEMA dannys_diner;
+SET search_path = dannys_diner;
 
-DROP TABLE IF EXISTS dannys_diner.sales;
-CREATE TABLE dannys_diner.sales (
-  "customer_id" VARCHAR(1),
+CREATE TABLE sales (
+  "customer_id" VARCHAR(1),s
   "order_date" DATE,
   "product_id" INTEGER
 );
 
-INSERT INTO dannys_diner.sales
+INSERT INTO sales
   ("customer_id", "order_date", "product_id")
 VALUES
   ('A', '2021-01-01', '1'),
@@ -25,30 +25,28 @@ VALUES
   ('C', '2021-01-01', '3'),
   ('C', '2021-01-01', '3'),
   ('C', '2021-01-07', '3');
- 
 
-DROP TABLE IF EXISTS dannys_diner.menu;
-CREATE TABLE dannys_diner.menu (
+
+CREATE TABLE menu (
   "product_id" INTEGER,
   "product_name" VARCHAR(5),
   "price" INTEGER
 );
 
-INSERT INTO dannys_diner.menu
+INSERT INTO menu
   ("product_id", "product_name", "price")
 VALUES
   ('1', 'sushi', '10'),
   ('2', 'curry', '15'),
   ('3', 'ramen', '12');
-  
 
-DROP TABLE IF EXISTS dannys_diner.members;
-CREATE TABLE dannys_diner.members (
+
+CREATE TABLE members (
   "customer_id" VARCHAR(1),
   "join_date" DATE
 );
 
-INSERT INTO dannys_diner.members
+INSERT INTO members
   ("customer_id", "join_date")
 VALUES
   ('A', '2021-01-07'),
