@@ -1,134 +1,110 @@
-USE EightWeekSQLChallenge;
 --
-/*
-	========	B. RUNNER AND CUSTOMER EXPERIENCE	========
-*/
+-- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
+-- Week 2 - Pizza Runner
+-- Part B - Runner and Customer Experience
 --
---	1.	How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
-SELECT DATEPART(week, registration_date) AS [week]
-	,Count(*) AS runner_signup
-FROM pizza_runner.runners
-GROUP BY DATEPART(week, registration_date);
-/*
-	week        runner_signup
-	----------- -------------
-	1           1
-	2           2
-	3           1
-*/
+-- 1. How many runners signed up for each 1 week period? (i.e. week starts 2021-01-01)
+SELECT
+    TO_CHAR(registration_date, 'ww')::INT AS week_number,
+    COUNT(runner_id) AS runners_total
+FROM
+    pizza_runner.runners
+GROUP BY
+    1
+ORDER BY
+    1;
+
 --
---	2.	What was the average time in minutes it took for each runner
---		to arrive at the Pizza Runner HQ to pickup the order?
-SELECT runner_id
-	,AVG(DatePart(MINUTE, pickup_time)) AS avg_duration_minute
-FROM ##runner_orders_cleaned
-GROUP BY runner_id;
-/*
-		runner_id   avg_duration_minute
-	----------- -------------------
-	1           21
-	2           32
-	3           10
-*/
+-- 2. What was the average time in minutes it took for each runner to arrive at the Pizza Runner HQ to pickup the order?
+SELECT
+    r.runner_id,
+    ROUND(AVG(EXTRACT('epoch' FROM r.pickup_time - c.order_time) / 60)::NUMERIC, 1) AS time_to_pickup_order_average
+FROM
+    pizza_runner.customer_orders_clean AS c
+    JOIN pizza_runner.runner_orders_clean AS r ON c.order_id = r.order_id
+WHERE
+    r.cancellation IS NULL
+GROUP BY
+    1;
+
 --
---	3.	Is there any relationship between the number of pizzas
---		and how long the order takes to prepare?
-SELECT COUNT(*) AS pizza_ordered
-	,DATEDIFF(MINUTE, order_time, pickup_time) AS prep_time_minute
-FROM ##customer_orders_cleaned AS customer
-JOIN ##runner_orders_cleaned AS runner
-	ON customer.order_id = runner.order_id
-		AND cancellation IS NULL
-GROUP BY customer.order_id
-	,DATEDIFF(MINUTE, order_time, pickup_time)
-ORDER BY 1 DESC
-	,2 DESC;
-/*
-	pizza_ordered prep_time_minute
-	------------- ----------------
-	3             30
-	2             21
-	2             16
-	1             21
-	1             10
-	1             10
-	1             10
-	1             10
-*/
+-- 3. Is there any relationship between the number of pizzas and how long the order takes to prepare?
+WITH orders_prep_time AS (
+    SELECT
+        c.order_id,
+        COUNT(c.order_id) AS pizza_num,
+        AVG(EXTRACT('epoch' FROM r.pickup_time - c.order_time) / 60) AS preparation_duration
+    FROM
+        pizza_runner.customer_orders_clean AS c
+        JOIN pizza_runner.runner_orders_clean AS r ON c.order_id = r.order_id
+    WHERE
+        cancellation IS NULL
+    GROUP BY
+        1
+)
+SELECT
+    pizza_num,
+    ROUND(AVG(preparation_duration), 1) AS prep_duration_average
+FROM
+    orders_prep_time
+GROUP BY
+    1;
+
 --
---	4.	What was the average distance travelled for each customer?
-SELECT customer.customer_id
-	,CONVERT(DECIMAL(4, 2), AVG(distance)) AS avg_distance_km
-FROM ##customer_orders_cleaned AS customer
-JOIN ##runner_orders_cleaned AS runner
-	ON customer.order_id = runner.order_id
-		AND cancellation IS NULL
-GROUP BY customer.customer_id;
-/*
-	customer_id avg_distance_km
-	----------- ----------------
-	101         20.00
-	102         16.73
-	103         23.40
-	104         10.00
-	105         25.00
-*/
+-- 4. What was the average distance travelled for each customer?
+SELECT
+    customer_id,
+    ROUND(AVG(distance)::NUMERIC, 2) AS distance_km_average
+FROM
+    pizza_runner.customer_orders_clean AS c
+    JOIN pizza_runner.runner_orders_clean AS r ON c.order_id = r.order_id
+GROUP BY
+    1
+ORDER BY
+    1;
+
 --
---	5.	What was the difference between the longest and shortest delivery times for all orders?
-SELECT MAX(duration) - MIN(duration) AS duration_difference_minutes
-FROM ##runner_orders_cleaned
-WHERE cancellation IS NULL;
-/*
-	duration_difference_minutes
-	---------------------------
-	30
-*/
+-- 5. What was the difference between the longest and shortest delivery times for all orders?
+SELECT
+    MAX(duration) - MIN(duration) AS duration_diff_mins
+FROM
+    pizza_runner.runner_orders_clean;
+
 --
---	6.	What was the average speed for each runner for each delivery
---		and do you notice any trend for these values?
-SELECT runner_id
-	,CONVERT(DECIMAL(4, 2), AVG((distance / duration) * 60)) AS avg_speed_kmph
-FROM ##runner_orders_cleaned
-WHERE cancellation IS NULL
-GROUP BY runner_id;
-/*
-	runner_id   avg_speed_kmph
-	----------- ----------------
-	1           45.54
-	2           62.90
-	3           40.00
-*/
+-- 6. What was the average speed for each runner for each delivery and do you notice any trend for these values?
+SELECT
+    runner_id,
+    ROUND(AVG(distance / (duration::NUMERIC / 60))::NUMERIC, 2) speed_average
+FROM
+    pizza_runner.runner_orders_clean
+WHERE
+    cancellation IS NULL
+GROUP BY
+    1;
+
 --
---	7.	What is the successful delivery percentage for each runner?
-WITH delivery
-AS (
-	SELECT s_delivery.runner_id
-		,COALESCE(success, 0) AS delivered
-		,COALESCE(failed, 0) AS undelivered
-	FROM (
-		SELECT runner_id
-			,CONVERT(FLOAT, COUNT(*)) AS success
-		FROM ##runner_orders_cleaned
-		WHERE cancellation IS NULL
-		GROUP BY runner_id
-		) AS s_delivery
-	LEFT JOIN (
-		SELECT runner_id
-			,CONVERT(FLOAT, COUNT(*)) AS failed
-		FROM ##runner_orders_cleaned
-		WHERE cancellation IS NOT NULL
-		GROUP BY runner_id
-		) AS u_delivery
-		ON s_delivery.runner_id = u_delivery.runner_id
-	)
-SELECT runner_id
-	,FORMAT((delivered / (delivered + undelivered)), 'p0') AS successful_delivery
-FROM delivery
-ORDER BY runner_id;
-/*
-	runner_id   successful_delivery
-	----------- --------------------
-	1           100%
-	2           75%
-	3           50%
-*/
+-- 7. What is the successful delivery percentage for each runner?
+SELECT
+    runner_id,
+    ROUND((100 * succesful_delivery / (succesful_delivery + unsuccesful_delivery))) AS succesful_percentage
+FROM (
+    SELECT
+        runner_id,
+        SUM(
+            CASE WHEN cancellation IS NULL THEN
+                1
+            ELSE
+                0
+            END) AS succesful_delivery,
+        SUM(
+            CASE WHEN cancellation IS NOT NULL THEN
+                1
+            ELSE
+                0
+            END) AS unsuccesful_delivery
+    FROM
+        pizza_runner.runner_orders_clean
+    GROUP BY
+        runner_id) AS delivery
+ORDER BY
+    1;
