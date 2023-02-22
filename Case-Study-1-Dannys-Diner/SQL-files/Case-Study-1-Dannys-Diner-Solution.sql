@@ -1,6 +1,6 @@
 --
 -- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
--- Week 8 - Fresh Segments
+-- Week 1 - Danny's Diner
 --
 -- 1. What is the total amount each customer spent at the restaurant?
 SELECT
