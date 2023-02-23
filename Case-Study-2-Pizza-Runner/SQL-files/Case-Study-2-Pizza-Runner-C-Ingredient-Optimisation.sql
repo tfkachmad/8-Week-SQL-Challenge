@@ -1,422 +1,381 @@
-USE EightWeekSQLChallenge;
 --
-/*
-	========	C. Ingredient Optimisation		========
-*/
+-- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
+-- Week 2 - Pizza Runner
+-- Part C - Ingredient Optimisation
 --
---	1.	What are the standard ingredients for each pizza?
-SELECT piz.pizza_name
-	,STRING_AGG(topp.topping_name, ', ') AS ingredients
-FROM ##pizza_recipes_cleaned AS rec
-JOIN ##pizza_toppings_cleaned AS topp
-	ON rec.toppings = topp.topping_id
-JOIN ##pizza_names_cleaned AS piz
-	ON rec.pizza_id = piz.pizza_id
-GROUP BY piz.pizza_name;
-/*
-	pizza_name           ingredients
-	-------------------- -----------------------------------------------------------------------
-	Meatlovers           Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	Vegetarian           Cheese, Mushrooms, Onions, Peppers, Tomatoes, Tomato Sauce
-*/
---
---	2.	What was the most commonly added extra?
-SELECT TOP 1 topp.topping_name
-	,COUNT(topp.topping_id) AS times_added
-FROM ##customer_orders_cleaned AS ord
-CROSS APPLY STRING_SPLIT(ord.extras, ',')
-JOIN ##pizza_toppings_cleaned AS topp
-	ON topp.topping_id = [value]
-GROUP BY topp.topping_name
-ORDER BY 2 DESC;
-/*
-	topping_name         times_added
-	-------------------- -----------
-	Bacon                4
-*/
---
---	3. What was the most common exclusion?
-SELECT TOP 1 topp.topping_name
-	,COUNT(topp.topping_id) AS times_excluded
-FROM ##customer_orders_cleaned AS ord
-CROSS APPLY STRING_SPLIT(ord.exclusions, ',')
-JOIN ##pizza_toppings_cleaned AS topp
-	ON topp.topping_id = [value]
-GROUP BY topp.topping_name
-ORDER BY 2 DESC;
-/*
-	topping_name         times_excluded
-	-------------------- --------------
-	Cheese               4
-*/
---
---	4.	Generate an order item for each record in the customers_orders table
---		in the format of one of the following:
---			i. Meat Lovers
---			ii. Meat Lovers - Exclude Beef
---			iii. Meat Lovers - Extra Bacon
---			iv. Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
---	Breaking down the exclusions and extras columns
---	Example	|2, 6|	->	|2| |6|
-WITH breakdown_cte
-AS (
-	SELECT ord.order_id
-		,ord.customer_id
-		,piz.pizza_name
-		,ord.order_row
-		,CASE -- Exclusion 1 breakdown
-			WHEN exclusions IS NULL
-				THEN NULL
-			ELSE LEFT(exclusions, 1)
-			END AS exclusions_1
-		,CASE -- Exclusion 2 breakdown
-			WHEN LEN(exclusions) > 1
-				THEN RIGHT(exclusions, 1)
-			ELSE NULL
-			END AS exclusions_2
-		,CASE -- Extras 1 breakdown
-			WHEN extras IS NULL
-				THEN NULL
-			ELSE LEFT(extras, 1)
-			END AS extras_1
-		,CASE -- Extras 2 breakdown
-			WHEN LEN(extras) > 1
-				THEN RIGHT(extras, 1)
-			ELSE NULL
-			END AS extras_2
-	FROM ##customer_orders_cleaned AS ord
-	JOIN ##pizza_names_cleaned AS piz
-		ON ord.pizza_id = piz.pizza_id
-	)
-	,
-	--	Join the breakdown result to get the toppings name for the excluded and extras topping
-topping_name_cte
-AS (
-	SELECT bd.order_id
-		,bd.customer_id
-		,bd.pizza_name
-		,topp1.topping_name AS exclusions_name_1
-		,topp2.topping_name AS exclusions_name_2
-		,topp3.topping_name AS extras_name_1
-		,topp4.topping_name AS extras_name_2
-	FROM breakdown_cte AS bd
-	LEFT JOIN ##pizza_toppings_cleaned AS topp1
-		ON bd.exclusions_1 = topp1.topping_id
-	LEFT JOIN ##pizza_toppings_cleaned AS topp2
-		ON bd.exclusions_2 = topp2.topping_id
-	LEFT JOIN ##pizza_toppings_cleaned AS topp3
-		ON bd.extras_1 = topp3.topping_id
-	LEFT JOIN ##pizza_toppings_cleaned AS topp4
-		ON bd.extras_2 = topp4.topping_id
-	)
-	,concat_build
-AS (
-	SELECT order_id
-		,customer_id
-		,pizza_name
-		,CASE
-			WHEN exclusions_name_1 IS NULL
-				AND exclusions_name_2 IS NULL
-				THEN NULL
-			WHEN exclusions_name_1 IS NOT NULL
-				AND exclusions_name_2 IS NULL
-				THEN CONCAT (
-						' - Exclude '
-						,exclusions_name_1
-						)
-			WHEN exclusions_name_1 IS NULL
-				AND exclusions_name_2 IS NOT NULL
-				THEN CONCAT (
-						' - Exclude '
-						,exclusions_name_2
-						)
-			ELSE CONCAT (
-					' - Exclude '
-					,exclusions_name_1
-					,', '
-					,exclusions_name_2
-					)
-			END AS exclusions
-		,CASE
-			WHEN extras_name_1 IS NULL
-				AND extras_name_2 IS NULL
-				THEN NULL
-			WHEN extras_name_1 IS NOT NULL
-				AND extras_name_2 IS NULL
-				THEN CONCAT (
-						' - Extra '
-						,extras_name_1
-						)
-			WHEN extras_name_1 IS NULL
-				AND extras_name_2 IS NOT NULL
-				THEN CONCAT (
-						' - Extra '
-						,extras_name_2
-						)
-			ELSE CONCAT (
-					' - Extra '
-					,extras_name_1
-					,', '
-					,extras_name_2
-					)
-			END AS extras
-	FROM topping_name_cte
-	)
--- Let's create the required format
-SELECT order_id
-	,customer_id
-	,CONCAT (
-		pizza_name
-		,exclusions
-		,extras
-		) AS order_details
-FROM concat_build;
-/*
-	order_id    customer_id order_details
-	----------- ----------- -----------------------------------------------------------------
-	1           101         Meatlovers
-	2           101         Meatlovers
-	3           102         Meatlovers
-	3           102         Vegetarian
-	4           103         Meatlovers - Exclude Cheese
-	4           103         Meatlovers - Exclude Cheese
-	4           103         Vegetarian - Exclude Cheese
-	5           104         Meatlovers - Extra Bacon
-	6           101         Vegetarian
-	7           105         Vegetarian - Extra Bacon
-	8           102         Meatlovers
-	9           103         Meatlovers - Exclude Cheese - Extra Bacon, Chicken
-	10          104         Meatlovers
-	10          104         Meatlovers - Exclude BBQ Sauce, Mushrooms - Extra Bacon, Cheese
-*/
---
---	5.	Generate an alphabetically ordered comma separated ingredient list for each pizza order
---		from the customer_orders table and add a 2x in front of any relevant ingredients
---		For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
--- Show the toppings for each pizza ordered by each customers
-DROP TABLE
-IF EXISTS #customer_orders_long;
-	SELECT ord.order_row
-		,ord.order_id
-		,ord.customer_id
-		,piz.pizza_name
-		,rec.toppings AS toppings
-	INTO #customer_orders_long
-	FROM ##customer_orders_cleaned AS ord
-	JOIN ##pizza_recipes_cleaned AS rec
-		ON ord.pizza_id = rec.pizza_id
-	JOIN ##pizza_names_cleaned AS piz
-		ON rec.pizza_id = piz.pizza_id;
---
--- Reshape the exclusions column from ##customer_orders_cleaned table to list the ingredients
-DROP TABLE
-IF EXISTS #customer_exclusions_long;
-	SELECT ord.order_row
-		,ord.order_id
-		,ord.customer_id
-		,pizz.pizza_name
-		,TRIM(value) AS toppings
-	INTO #customer_exclusions_long
-	FROM ##customer_orders_cleaned AS ord
-	CROSS APPLY STRING_SPLIT(exclusions, ',')
-	JOIN ##pizza_names_cleaned AS pizz
-		ON ord.pizza_id = pizz.pizza_id
-	WHERE exclusions IS NOT NULL;
---
--- Reshape the extras column from ##customer_orders_cleaned table to list the ingredients
-DROP TABLE
-IF EXISTS #customer_extras_long;
-	SELECT ord.order_row
-		,ord.order_id
-		,ord.customer_id
-		,piz.pizza_name
-		,TRIM(value) AS toppings
-	INTO #customer_extras_long
-	FROM ##customer_orders_cleaned AS ord
-	CROSS APPLY STRING_SPLIT(extras, ',')
-	JOIN ##pizza_names_cleaned AS piz
-		ON ord.pizza_id = piz.pizza_id
-	WHERE EXTRAS IS NOT NULL;
---
--- Union the new exclusion table and the new customer order table
--- And, remove the topping in the second table that also exist in the exclusion table
-DROP TABLE
-IF EXISTS #customer_reduced;
-	WITH excluded
-	AS (
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		FROM #customer_exclusions_long
+-- 1. What are the standard ingredients for each pizza?
+SELECT
+    n.pizza_name,
+    STRING_AGG(t.topping_name, ', ' ORDER BY t.topping_id) AS pizza_ingredients
+FROM
+    pizza_runner.pizza_recipes_long AS r
+    JOIN pizza_runner.pizza_toppings AS t ON r.topping_id = t.topping_id
+    JOIN pizza_runner.pizza_names AS n ON r.pizza_id = n.pizza_id
+GROUP BY
+    1
+ORDER BY
+    1;
 
-		UNION ALL
-
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		FROM #customer_orders_long
-		)
-		,find_dup
-	AS (
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-			,COUNT(*) AS occurence
-		FROM excluded
-		GROUP BY order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		)
-		,drop_dup
-	AS (
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		FROM find_dup
-		WHERE occurence = 1
-		)
-	SELECT *
-	INTO #customer_reduced
-	FROM drop_dup;
 --
--- Union the reduced customer table with the new extras table
--- Create a temp table to store the entirity of the result called #detailed_order
-DROP TABLE
-IF EXISTS #detailed_order;
-	WITH customer_extras
-	AS (
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		FROM #customer_reduced
+-- 2. What was the most commonly added extra?
+WITH extras_id AS (
+    SELECT
+        UNNEST(STRING_TO_ARRAY(extras, ', '))::INTEGER AS extras
+    FROM
+        pizza_runner.customer_orders_clean
+    WHERE
+        extras IS NOT NULL
+)
+SELECT
+    p.topping_name,
+    COUNT(*) AS total
+FROM
+    extras_id AS e
+    JOIN pizza_runner.pizza_toppings AS p ON e.extras = p.topping_id
+GROUP BY
+    1
+ORDER BY
+    2 DESC
+LIMIT 1;
 
-		UNION ALL
+--
+-- 3. What was the most common exclusion?
+WITH exclusions_id AS (
+    SELECT
+        UNNEST(STRING_TO_ARRAY(exclusions, ', '))::INTEGER AS exclusions
+    FROM
+        pizza_runner.customer_orders_clean
+    WHERE
+        exclusions IS NOT NULL
+)
+SELECT
+    p.topping_name,
+    COUNT(*) AS total
+FROM
+    exclusions_id AS e
+    JOIN pizza_runner.pizza_toppings AS p ON e.exclusions = p.topping_id
+GROUP BY
+    1
+ORDER BY
+    2 DESC
+LIMIT 1;
 
-		SELECT order_row
-			,order_id
-			,customer_id
-			,pizza_name
-			,toppings
-		FROM #customer_extras_long
-		)
-	SELECT order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,topping_id
-		,topping_name
-	INTO #detailed_order
-	FROM customer_extras AS orders
-	JOIN ##pizza_toppings_cleaned AS toppings
-		ON orders.toppings = toppings.topping_id;
 --
--- Answer the questions!
-WITH get_count
-AS (
-	SELECT order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,topping_name
-		,COUNT(topping_id) AS num
-	FROM #detailed_order AS orders
-	GROUP BY order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,topping_name
-	)
-	,topping_count
-AS (
-	SELECT order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,CASE
-			WHEN num > 1
-				THEN CONCAT (
-						num
-						,'x'
-						,topping_name
-						)
-			ELSE topping_name
-			END AS topping_num
-	FROM get_count
-	)
-	,topping_text
-AS (
-	SELECT order_row
-		,order_id
-		,customer_id
-		,pizza_name
-		,STRING_AGG(topping_num, ', ') AS toppings_detail
-	FROM topping_count
-	GROUP BY order_row
-		,order_id
-		,customer_id
-		,pizza_name
-	)
-SELECT order_row
-	,order_id
-	,customer_id
-	,CONCAT (
-		pizza_name
-		,': '
-		,toppings_detail
-		) AS order_detail
-FROM topping_text;
-/*
-	order_row            order_id    customer_id order_detail
-	-------------------- ----------- ----------- ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-	1                    1           101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	2                    2           101         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	3                    3           102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	4                    3           102         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	5                    4           103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
-	6                    4           103         Meatlovers: Bacon, BBQ Sauce, Beef, Chicken, Mushrooms, Pepperoni, Salami
-	7                    4           103         Vegetarian: Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	8                    5           104         Meatlovers: 2xBacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	9                    6           101         Vegetarian: Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	10                   7           105         Vegetarian: Bacon, Cheese, Mushrooms, Onions, Peppers, Tomato Sauce, Tomatoes
-	11                   8           102         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	12                   9           103         Meatlovers: 2xBacon, BBQ Sauce, Beef, 2xChicken, Mushrooms, Pepperoni, Salami
-	13                   10          104         Meatlovers: Bacon, BBQ Sauce, Beef, Cheese, Chicken, Mushrooms, Pepperoni, Salami
-	14                   10          104         Meatlovers: 2xBacon, Beef, 2xCheese, Chicken, Pepperoni, Salami
-*/
+-- 4. Generate an order item for each record in the customers_orders table in the format of one of the following:
+-- 		Meat Lovers
+-- 		Meat Lovers - Exclude Beef
+-- 		Meat Lovers - Extra Bacon
+-- 		Meat Lovers - Exclude Cheese, Bacon - Extra Mushroom, Peppers
+WITH orders_long AS (
+    SELECT
+        c.unique_id,
+        c.order_id,
+        c.customer_id,
+        c.pizza_id,
+        t1.exclusions::INTEGER,
+        t2.extras::INTEGER
+    FROM
+        pizza_runner.customer_orders_clean AS c
+        LEFT JOIN LATERAL UNNEST(STRING_TO_ARRAY(exclusions, ', ')) AS t1 (exclusions) ON TRUE
+        LEFT JOIN LATERAL UNNEST(STRING_TO_ARRAY(extras, ', ')) AS t2 (extras) ON TRUE
+),
+toppings_pizza_name AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        o.exclusions AS exclusions_id,
+        o.extras AS extras_id,
+        p1.topping_id,
+        p1.topping_name AS exclusions,
+        p2.topping_name AS extras,
+        p3.pizza_name,
+        ROW_NUMBER() OVER (PARTITION BY unique_id,
+            o.exclusions) AS exclusions_index,
+        ROW_NUMBER() OVER (PARTITION BY unique_id,
+            o.extras) AS extras_index
+    FROM
+        orders_long AS o
+        LEFT JOIN pizza_runner.pizza_toppings AS p1 ON o.exclusions = p1.topping_id
+        LEFT JOIN pizza_runner.pizza_toppings AS p2 ON o.extras = p2.topping_id
+        JOIN pizza_runner.pizza_names AS p3 ON o.pizza_id = p3.pizza_id
+),
+remove_duplicate_toppings AS (
+    SELECT
+        unique_id,
+        order_id,
+        pizza_name,
+        topping_id,
+        CASE WHEN exclusions_index = 2 THEN
+            NULL
+        ELSE
+            exclusions
+        END,
+        CASE WHEN extras_index = 2 THEN
+            NULL
+        ELSE
+            extras
+        END
+    FROM
+        toppings_pizza_name
+),
+topping_list AS (
+    SELECT
+        unique_id,
+        order_id,
+        pizza_name,
+        STRING_AGG(exclusions, ', ' ORDER BY topping_id) AS exclusions_list,
+    STRING_AGG(extras, ', ' ORDER BY topping_id) AS extras_list
+FROM
+    remove_duplicate_toppings
+GROUP BY
+    1,
+    2,
+    3
+)
+SELECT
+    order_id,
+    pizza_name || ' ' || COALESCE(' - Exclude ' || exclusions_list, '') || ' ' || COALESCE(' - Extras ' || extras_list, '') AS pizza_order_detail
+FROM
+    topping_list
+ORDER BY
+    1;
+
 --
---	6.	What is the total quantity of each ingredient used in all delivered pizzas
---		sorted by most frequent first?
-SELECT topping_name
-	,COUNT(topping_id) AS time_used
-FROM #detailed_order
-GROUP BY topping_name
-ORDER BY 2 DESC
-	,topping_name;
-	/*
-	topping_name         time_used
-	-------------------- -----------
-	Bacon                14
-	Mushrooms            13
-	Cheese               11
-	Chicken              11
-	Beef                 10
-	Pepperoni            10
-	Salami               10
-	BBQ Sauce            9
-	Onions               4
-	Peppers              4
-	Tomato Sauce         4
-	Tomatoes             4
-*/
+-- 5. Generate an alphabetically ordered comma separated ingredient list for each pizza order from the customer_orders table and add a 2x in front of any relevant ingredients
+-- 		For example: "Meat Lovers: 2xBacon, Beef, ... , Salami"
+WITH exclusions AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        UNNEST(STRING_TO_ARRAY(exclusions, ', '))::INTEGER AS topping_id
+    FROM
+        pizza_runner.customer_orders_clean
+),
+extras AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        UNNEST(STRING_TO_ARRAY(extras, ', '))::INTEGER AS topping_id
+    FROM
+        pizza_runner.customer_orders_clean
+),
+all_toppings AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        c.pizza_id,
+        topping_id
+    FROM
+        pizza_runner.customer_orders_clean AS c
+        LEFT JOIN pizza_runner.pizza_recipes_long AS r ON c.pizza_id = r.pizza_id
+),
+remove_exclusions AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        topping_id,
+        COUNT(topping_id) AS topping_num
+    FROM (
+        SELECT
+            unique_id,
+            order_id,
+            customer_id,
+            pizza_id,
+            topping_id
+        FROM
+            all_toppings
+        UNION ALL
+        SELECT
+            unique_id,
+            order_id,
+            customer_id,
+            pizza_id,
+            topping_id
+        FROM
+            exclusions) AS exclusions_union
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5
+    HAVING
+        COUNT(topping_id) = 1
+),
+toppings_count AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_name,
+        topping_name,
+        COUNT(extras_union.topping_id) AS topping_num
+    FROM (
+        SELECT
+            unique_id,
+            order_id,
+            customer_id,
+            pizza_id,
+            topping_id
+        FROM
+            remove_exclusions
+        UNION ALL
+        SELECT
+            unique_id,
+            order_id,
+            customer_id,
+            pizza_id,
+            topping_id
+        FROM
+            extras) AS extras_union
+    JOIN pizza_runner.pizza_names AS n ON extras_union.pizza_id = n.pizza_id
+    JOIN pizza_runner.pizza_toppings AS t ON extras_union.topping_id = t.topping_id
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5
+),
+toppings_name AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_name,
+        topping_name,
+        CASE WHEN topping_num > 1 THEN
+            CONCAT(topping_num, 'x', topping_name)
+        ELSE
+            topping_name
+        END AS topping
+    FROM
+        toppings_count
+),
+pizza_topping_concat AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_name,
+        CONCAT(pizza_name, ': ', STRING_AGG(topping, ', ' ORDER BY topping_name)) AS pizza
+    FROM
+        toppings_name
+    GROUP BY
+        1,
+        2,
+        3,
+        4
+)
+SELECT
+    order_id,
+    customer_id,
+    pizza
+FROM
+    pizza_topping_concat;
+
+--
+-- 6. What is the total quantity of each ingredient used in all delivered pizzas sorted by most frequent first?
+WITH exclusions AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        UNNEST(STRING_TO_ARRAY(exclusions, ', '))::INTEGER AS topping_id
+    FROM
+        pizza_runner.customer_orders_clean
+),
+extras AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        UNNEST(STRING_TO_ARRAY(extras, ', '))::INTEGER AS topping_id
+    FROM
+        pizza_runner.customer_orders_clean
+),
+all_toppings AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        c.pizza_id,
+        topping_id
+    FROM
+        pizza_runner.customer_orders_clean AS c
+        LEFT JOIN pizza_runner.pizza_recipes_long AS r ON c.pizza_id = r.pizza_id
+),
+remove_exclusions AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        topping_id,
+        COUNT(topping_id) AS topping_num
+    FROM (
+        SELECT
+            unique_id,
+            order_id,
+            customer_id,
+            pizza_id,
+            topping_id
+        FROM
+            all_toppings
+    UNION ALL
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        topping_id
+    FROM
+        exclusions) AS exclusions_union
+    GROUP BY
+        1,
+        2,
+        3,
+        4,
+        5
+    HAVING
+        COUNT(topping_id) = 1
+),
+toppings_used AS (
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        topping_id
+    FROM
+        remove_exclusions
+    UNION ALL
+    SELECT
+        unique_id,
+        order_id,
+        customer_id,
+        pizza_id,
+        topping_id
+    FROM
+        extras
+)
+SELECT
+    topping_name,
+    COUNT(topping_name) AS topping_total
+FROM
+    toppings_used AS t1
+    JOIN pizza_runner.pizza_toppings AS t2 ON t1.topping_id = t2.topping_id
+GROUP BY
+    1
+ORDER BY
+    2 DESC;
