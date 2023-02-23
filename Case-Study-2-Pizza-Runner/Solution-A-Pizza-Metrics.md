@@ -1,6 +1,6 @@
 # :pizza: Case Study 2 - Pizza Runner: Solution A. Pizza Metrics
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
+![badge](https://img.shields.io/badge/PostgreSQL-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 1. How many pizzas were ordered?
 
