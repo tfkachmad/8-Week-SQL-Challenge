@@ -6,7 +6,7 @@
 
 Thanks to [**@DataWithDanny**](https://www.datawithdanny.com/) for the excellent SQL case studies! 👋🏻
 
-Find the full case studies on [**#8WeekSQLChallenge**](https://8weeksqlchallenge.com/)
+Find the full case studies on [https://8weeksqlchallenge.com/](https://8weeksqlchallenge.com/)
 
 ## :books: Case Studies
 
