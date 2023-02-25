@@ -12,7 +12,7 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-3/)
 - [:triangular\_flag\_on\_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
   - [A. Customer Journey](#a-customer-journey)
   - [B. Data Analysis](#b-data-analysis)
-  - [B. Data Analysis](#b-data-analysis-1)
+  - [C. Payment Challenge](#c-payment-challenge)
 
 ---
 
@@ -122,7 +122,7 @@ Danny created Foodie-Fi with a data driven mindset and wanted to ensure all futu
 
 [![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-3-Foodie-Fi/Solution-B-Data-Analysis.md)
 
-## B. Data Analysis
+## C. Payment Challenge
 
 <details>
 <summary>Questions</summary>
