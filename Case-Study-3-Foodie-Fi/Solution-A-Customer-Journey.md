@@ -1,6 +1,6 @@
 # :avocado: Case Study 3 - Foodie-Fi: Solution A. Customer Journey
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
+![badge](https://img.shields.io/badge/PostgreSQL-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 1. Based off the 8 sample customers provided in the sample from the `subscriptions` table, write a brief description about each customer’s onboarding journey. Try to keep it as short as possible - you may also want to run some sort of join to make your explanations a bit easier!
     - The `subscription` table example:
@@ -28,4 +28,4 @@
         | 19          | 2       | 2020-06-29 |
         | 19          | 3       | 2020-08-29 |
 
-    > All the customer started their journey using Foodie-Fi with the Trial plan. Some customer choose one of the three available plans, plan with plan_id with either 1 (basic monthly), 2 (pro monthly), or 3 (pro annual) after their trial plan ended. There are also customer that is churned/cancelled their subscription either after their trial plan ended or after certain plan.
+    > All the customer started their journey using Foodie-Fi with the Trial plan. Some customers choose one of the three available plans, plan with plan_id with either 1 (basic monthly), 2 (pro monthly), or 3 (pro annual) after their trial plan ends. There are also customers that churned/canceled their subscriptions either after their trial plan ended or after a certain plan.

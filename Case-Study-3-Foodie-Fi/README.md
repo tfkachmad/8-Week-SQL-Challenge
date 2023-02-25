@@ -8,10 +8,11 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-3/)
 
 - [:briefcase: Business Case](#briefcase-business-case)
 - [:mag: Entity Relationship Diagram](#mag-entity-relationship-diagram)
-- [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
-- [:triangular_flag_on_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
+- [:bookmark\_tabs:Example Datasets](#bookmark_tabsexample-datasets)
+- [:triangular\_flag\_on\_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
   - [A. Customer Journey](#a-customer-journey)
   - [B. Data Analysis](#b-data-analysis)
+  - [B. Data Analysis](#b-data-analysis-1)
 
 ---
 
@@ -120,3 +121,50 @@ Danny created Foodie-Fi with a data driven mindset and wanted to ensure all futu
 **Click** the badge below to view my solution for this set of questions.
 
 [![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-3-Foodie-Fi/Solution-B-Data-Analysis.md)
+
+## B. Data Analysis
+
+<details>
+<summary>Questions</summary>
+
+The Foodie-Fi team wants you to create a new payments table for the year 2020 that includes amounts paid by each customer in the subscriptions table with the following requirements:
+
+- monthly payments always occur on the same day of month as the original start_date of any monthly paid plan
+- upgrades from basic to monthly or pro plans are reduced by the current paid amount in that month and start immediately
+- upgrades from pro monthly to pro annual are paid at the end of the current billing period and also starts at the end of the month period
+- once a customer churns they will no longer make payments
+
+Example outputs for this table might look like the following:
+
+| customer_id | plan_id | plan_name     | payment_date | amount | payment_order |
+|-------------|---------|---------------|--------------|--------|---------------|
+| 1           | 1       | basic monthly | 2020-08-08   | 9.90   | 1             |
+| 1           | 1       | basic monthly | 2020-09-08   | 9.90   | 2             |
+| 1           | 1       | basic monthly | 2020-10-08   | 9.90   | 3             |
+| 1           | 1       | basic monthly | 2020-11-08   | 9.90   | 4             |
+| 1           | 1       | basic monthly | 2020-12-08   | 9.90   | 5             |
+| 2           | 3       | pro annual    | 2020-09-27   | 199.00 | 1             |
+| 13          | 1       | basic monthly | 2020-12-22   | 9.90   | 1             |
+| 15          | 2       | pro monthly   | 2020-03-24   | 19.90  | 1             |
+| 15          | 2       | pro monthly   | 2020-04-24   | 19.90  | 2             |
+| 16          | 1       | basic monthly | 2020-06-07   | 9.90   | 1             |
+| 16          | 1       | basic monthly | 2020-07-07   | 9.90   | 2             |
+| 16          | 1       | basic monthly | 2020-08-07   | 9.90   | 3             |
+| 16          | 1       | basic monthly | 2020-09-07   | 9.90   | 4             |
+| 16          | 1       | basic monthly | 2020-10-07   | 9.90   | 5             |
+| 16          | 3       | pro annual    | 2020-10-21   | 189.10 | 6             |
+| 18          | 2       | pro monthly   | 2020-07-13   | 19.90  | 1             |
+| 18          | 2       | pro monthly   | 2020-08-13   | 19.90  | 2             |
+| 18          | 2       | pro monthly   | 2020-09-13   | 19.90  | 3             |
+| 18          | 2       | pro monthly   | 2020-10-13   | 19.90  | 4             |
+| 18          | 2       | pro monthly   | 2020-11-13   | 19.90  | 5             |
+| 18          | 2       | pro monthly   | 2020-12-13   | 19.90  | 6             |
+| 19          | 2       | pro monthly   | 2020-06-29   | 19.90  | 1             |
+| 19          | 2       | pro monthly   | 2020-07-29   | 19.90  | 2             |
+| 19          | 3       | pro annual    | 2020-08-29   | 199.00 | 3             |
+
+</details>
+
+**Click** the badge below to view my solution for this set of questions.
+
+[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-3-Foodie-Fi/Solution-C-Challenge-Payment.md)
