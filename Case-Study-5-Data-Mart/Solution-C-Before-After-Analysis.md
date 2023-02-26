@@ -1,6 +1,6 @@
 # :shopping_cart: Case Study 5 - Data Mart: Solution C. Before and After Analysis
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
+![badge](https://img.shields.io/badge/PostgreSQL-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 This technique is usually used when we inspect an important event and want to inspect the impact before and after a certain point in time.
 
@@ -15,250 +15,130 @@ Using this analysis approach - answer the following questions:
     Query:
 
     ```sql
-    DROP TABLE
-    IF EXISTS #before_after_4_weeks;
-        WITH before_4_weeks_cte
-        AS (
-            SELECT DISTINCT week_date
-                ,DATEADD(WEEK, - 4, week_date) AS before_4_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date = '2020-06-15'
-            )
-            ,after_4_weeks_cte
-        AS (
-            SELECT DISTINCT week_date
-                ,DATEADD(WEEK, 4, week_date) AS after_4_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date = '2020-06-15'
-            )
-            ,total_sales
-        AS (
-            SELECT SUM(CAST(sales AS BIGINT)) AS total_sales_4_week
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN (
-                            SELECT before_4_weeks
-                            FROM before_4_weeks_cte
-                            )
-                    AND (
-                            SELECT after_4_weeks
-                            FROM after_4_weeks_cte
-                            )
-            )
-            ,before_4_weeks_sales
-        AS (
-            SELECT SUM(CAST(sales AS FLOAT)) AS total_sales_before_4_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN (
-                            SELECT before_4_weeks
-                            FROM before_4_weeks_cte
-                            )
-                    AND '2020-06-15'
-            )
-            ,after_4_weeks_sales
-        AS (
-            SELECT SUM(CAST(sales AS FLOAT)) AS total_sales_after_4_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN '2020-06-15'
-                    AND (
-                            SELECT after_4_weeks
-                            FROM after_4_weeks_cte
-                            )
-            )
-        SELECT (
-                SELECT total_sales_4_week
-                FROM total_sales
-                ) AS total_sales
-            ,(
-                SELECT total_sales_before_4_weeks
-                FROM before_4_weeks_sales
-                ) AS total_sales_4_weeks_before_2020_06_15
-            ,(
-                SELECT total_sales_after_4_weeks
-                FROM after_4_weeks_sales
-                ) AS total_sales_4_weeks_after_2020_06_15
-            ,(
-                SELECT total_sales_after_4_weeks
-                FROM after_4_weeks_sales
-                ) - (
-                SELECT total_sales_before_4_weeks
-                FROM before_4_weeks_sales
-                ) AS change_rate
-            ,(
-                (
-                    SELECT total_sales_after_4_weeks
-                    FROM after_4_weeks_sales
-                    ) - (
-                    SELECT total_sales_before_4_weeks
-                    FROM before_4_weeks_sales
-                    )
-                ) / (
-                SELECT total_sales_4_week
-                FROM total_sales
-                ) * 100 AS percent_change_rate
-        INTO #before_after_4_weeks;
-    --
-    -- Find the result for the 4 weeks before and after 2020-06-15
-    SELECT FORMAT(total_sales_4_weeks_before_2020_06_15, '##,##') AS total_sales_4_weeks_before_2020_06_15
-        ,FORMAT(total_sales_4_weeks_after_2020_06_15, '##,##') AS total_sales_4_weeks_after_2020_06_15
-        ,FORMAT(change_rate, '##,##') AS sales_change_rate
-        ,CONCAT (
-            ROUND(percent_change_rate, 2)
-            ,'%'
-            ) AS percent_change_rate
-    FROM #before_after_4_weeks;
+    WITH sales_4_weeks_before AS (
+    SELECT
+        '2020-06-15' AS baseline_week,
+        MIN(TO_CHAR((week_date - INTERVAL '4 week'), 'YYYY-MM-DD')::DATE),
+        SUM(sales) AS sales_before
+    FROM
+        data_mart.clean_weekly_sales
+    WHERE
+        week_date BETWEEN TO_CHAR(('2020-06-15'::DATE - INTERVAL '4 week'), 'YYYY-MM-DD')::DATE AND '2020-06-15'::DATE
+    GROUP BY
+        1
+    ),
+    sales_4_weeks_after AS (
+        SELECT
+            '2020-06-15' AS baseline_week,
+            MAX(TO_CHAR((week_date + INTERVAL '4 week'), 'YYYY-MM-DD')::DATE),
+            SUM(sales) AS sales_after
+        FROM
+            data_mart.clean_weekly_sales
+        WHERE
+            week_date BETWEEN '2020-06-15'::DATE AND TO_CHAR(('2020-06-15'::DATE + INTERVAL '4 week'), 'YYYY-MM-DD')::DATE
+        GROUP BY
+            1
+    )
+    SELECT
+        TO_CHAR(s1.sales_before, '9,999,999,999') AS sales_total_4_weeks_before,
+        TO_CHAR(s2.sales_after, '9,999,999,999') AS sales_total_4_weeks_after,
+        TO_CHAR((s2.sales_after - s1.sales_before), '9,999,999,999') AS sales_change,
+        ROUND((100 * (s2.sales_after - s1.sales_before) / s1.sales_before::NUMERIC), 2) AS total_sales_change_percentage
+    FROM
+        sales_4_weeks_before AS s1
+        JOIN sales_4_weeks_after AS s2 ON s1.baseline_week = s2.baseline_week;
     ```
 
     Output:
 
-    | total_sales_4_weeks_before_2020_06_15 | total_sales_4_weeks_after_2020_06_15 | sales_change_rate | percent_change_rate |
-    |---------------------------------------|--------------------------------------|-------------------|---------------------|
-    | 2,915,903,705                         | 2,904,930,571                        | -10,973,134       | -0.21%              |
+    | "sales_total_4_weeks_before" | "sales_total_4_weeks_after" | "sales_change" | "total_sales_change_percentage" |
+    |------------------------------|-----------------------------|----------------|---------------------------------|
+    |  2,915,903,705               |  2,904,930,571              |    -10,973,134 | -0.38                           |
 
-    <br/>
+    <br>
 
 2. What about the entire 12 weeks before and after?
 
     Query:
 
     ```sql
-    DROP TABLE
-    IF EXISTS #before_after_12_weeks;
-        WITH before_12_weeks_cte
-        AS (
-            SELECT DISTINCT week_date
-                ,DATEADD(WEEK, - 12, week_date) AS before_12_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date = '2020-06-15'
-            )
-            ,after_12_weeks_cte
-        AS (
-            SELECT DISTINCT week_date
-                ,DATEADD(WEEK, 12, week_date) AS after_12_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date = '2020-06-15'
-            )
-            ,total_sales
-        AS (
-            SELECT SUM(CAST(sales AS BIGINT)) AS total_sales_12_week
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN (
-                            SELECT before_12_weeks
-                            FROM before_12_weeks_cte
-                            )
-                    AND (
-                            SELECT after_12_weeks
-                            FROM after_12_weeks_cte
-                            )
-            )
-            ,before_12_weeks_sales
-        AS (
-            SELECT SUM(CAST(sales AS FLOAT)) AS total_sales_before_12_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN (
-                            SELECT before_12_weeks
-                            FROM before_12_weeks_cte
-                            )
-                    AND '2020-06-15'
-            )
-            ,after_12_weeks_sales
-        AS (
-            SELECT SUM(CAST(sales AS FLOAT)) AS total_sales_after_12_weeks
-            FROM data_mart.clean_weekly_sales
-            WHERE week_date BETWEEN '2020-06-15'
-                    AND (
-                            SELECT after_12_weeks
-                            FROM after_12_weeks_cte
-                            )
-            )
-        SELECT (
-                SELECT total_sales_12_week
-                FROM total_sales
-                ) AS total_sales
-            ,(
-                SELECT total_sales_before_12_weeks
-                FROM before_12_weeks_sales
-                ) AS total_sales_12_weeks_before_2020_06_15
-            ,(
-                SELECT total_sales_after_12_weeks
-                FROM after_12_weeks_sales
-                ) AS total_sales_12_weeks_after_2020_06_15
-            ,(
-                SELECT total_sales_after_12_weeks
-                FROM after_12_weeks_sales
-                ) - (
-                SELECT total_sales_before_12_weeks
-                FROM before_12_weeks_sales
-                ) AS change_rate
-            ,(
-                (
-                    SELECT total_sales_after_12_weeks
-                    FROM after_12_weeks_sales
-                    ) - (
-                    SELECT total_sales_before_12_weeks
-                    FROM before_12_weeks_sales
-                    )
-                ) / (
-                SELECT total_sales_12_week
-                FROM total_sales
-                ) * 100 AS percent_change_rate
-        INTO #before_after_12_weeks;
-    --
-    -- Find the result for the 12 weeks before and after 2020-06-15
-    SELECT FORMAT(total_sales_12_weeks_before_2020_06_15, '##,##') AS total_sales_12_weeks_before_2020_06_15
-        ,FORMAT(total_sales_12_weeks_after_2020_06_15, '##,##') AS total_sales_12_weeks_after_2020_06_15
-        ,FORMAT(change_rate, '##,##') AS sales_change_rate
-        ,CONCAT (
-            ROUND(percent_change_rate, 2)
-            ,'%'
-            ) AS percent_change_rate
-    FROM #before_after_12_weeks;
+    WITH sales_12_weeks_before AS (
+        SELECT
+            '2020-06-15' AS baseline_week,
+            MIN(TO_CHAR((week_date - INTERVAL '12 week'), 'YYYY-MM-DD')::DATE),
+            SUM(sales) AS sales_before
+        FROM
+            data_mart.clean_weekly_sales
+        WHERE
+            week_date BETWEEN TO_CHAR(('2020-06-15'::DATE - INTERVAL '12 week'), 'YYYY-MM-DD')::DATE AND '2020-06-15'::DATE
+        GROUP BY
+            1
+    ),
+    sales_12_weeks_after AS (
+        SELECT
+            '2020-06-15' AS baseline_week,
+            MAX(TO_CHAR((week_date + INTERVAL '12 week'), 'YYYY-MM-DD')::DATE),
+            SUM(sales) AS sales_after
+        FROM
+            data_mart.clean_weekly_sales
+        WHERE
+            week_date BETWEEN '2020-06-15'::DATE AND TO_CHAR(('2020-06-15'::DATE + INTERVAL '12 week'), 'YYYY-MM-DD')::DATE
+        GROUP BY
+            1
+    )
+    SELECT
+        TO_CHAR(s1.sales_before, '9,999,999,999') AS sales_total_12_weeks_before,
+        TO_CHAR(s2.sales_after, '9,999,999,999') AS sales_total_12_weeks_after,
+        TO_CHAR((s2.sales_after - s1.sales_before), '9,999,999,999') AS total_sales_change,
+        ROUND((100 * (s2.sales_after - s1.sales_before) / s1.sales_before::NUMERIC), 2) AS total_sales_change_percentage
+    FROM
+        sales_12_weeks_before AS s1
+        JOIN sales_12_weeks_after AS s2 ON s1.baseline_week = s2.baseline_week;
     ```
 
     Output:
 
-    | total_sales_12_weeks_before_2020_06_15 | total_sales_12_weeks_after_2020_06_15 | sales_change_rate | percent_change_rate |
-    |----------------------------------------|---------------------------------------|-------------------|---------------------|
-    | 7,696,298,495                          | 6,973,947,753                         | -722,350,742      | -5.12%              |
+    | "sales_total_12_weeks_before" | "sales_total_12_weeks_after" | "total_sales_change" | "total_sales_change_percentage" |
+    |-------------------------------|------------------------------|----------------------|---------------------------------|
+    |  7,696,298,495                |  6,973,947,753               |   -722,350,742       | -9.39                           |
 
-    <br/>
+    <br>
 
 3. How do the sale metrics for these 2 periods before and after compare with the previous years in 2018 and 2019?
 
     Query:
 
     ```sql
-    WITH sales_2018_cte
-    AS (
-        SELECT FORMAT(SUM(CAST(sales AS BIGINT)), '##,##') AS total_sales_2018
-        FROM data_mart.clean_weekly_sales
-        WHERE calendar_year = '2018'
-        )
-        ,sales_2019_cte
-    AS (
-        SELECT FORMAT(SUM(CAST(sales AS BIGINT)), '##,##') AS total_sales_2019
-        FROM data_mart.clean_weekly_sales
-        WHERE calendar_year = '2019'
-        )
-    SELECT (
-            SELECT FORMAT(total_sales, '##,##')
-            FROM #before_after_4_weeks
-            ) AS total_sales_4_weeks_before_after_2020_06_15
-        ,(
-            SELECT FORMAT(total_sales, '##,##')
-            FROM #before_after_12_weeks
-            ) AS total_sales_12_weeks_before_after_2020_06_15
-        ,(
-            SELECT total_sales_2018
-            FROM sales_2018_cte
-            ) AS total_sales_2018
-        ,(
-            SELECT total_sales_2019
-            FROM sales_2019_cte
-            ) AS total_sales_2019;
+    WITH sales_2018_2019 AS (
+        SELECT
+            SUM(
+                CASE WHEN calendar_year = 2018 THEN
+                    sales
+                ELSE
+                    NULL
+                END) AS sales_2018,
+            SUM(
+                CASE WHEN calendar_year = 2019 THEN
+                    sales
+                ELSE
+                    NULL
+                END) AS sales_2019
+        FROM
+            data_mart.clean_weekly_sales
+    )
+    SELECT
+        TO_CHAR(s.sales_2018, '9,999,999,999,999') AS sales_2018,
+        TO_CHAR(s.sales_2019, '9,999,999,999,999') AS sales_2019,
+        TO_CHAR(sales_2019 - sales_2018, '9,999,999,999,999') AS total_sales_change,
+        ROUND((100 * (sales_2019 - sales_2018) / sales_2018::NUMERIC), 2) AS total_sales_change_percentage
+    FROM
+        sales_2018_2019 AS s;
     ```
 
     Output:
 
-    | total_sales_4_weeks_before_after_2020_06_15 | total_sales_12_weeks_before_after_2020_06_15 | total_sales_2018 | total_sales_2019 |
-    |---------------------------------------------|----------------------------------------------|------------------|------------------|
-    | 5,250,808,928                               | 14,100,220,900                               | 12,897,380,827   | 13,746,032,500   |
+    | "sales_2018"       | "sales_2019"       | "total_sales_change" | "total_sales_change_percentage" |
+    |--------------------|--------------------|----------------------|---------------------------------|
+    |     12,897,380,827 |     13,746,032,500 |        848,651,673   | 6.58                            |
+
+---
