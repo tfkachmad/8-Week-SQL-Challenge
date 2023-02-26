@@ -1,6 +1,6 @@
 -- Case study questions for #8WeeksSQLChallenge by Danny Ma
 -- Week 5 - Data Mart
--- Part d - Bonus Question
+-- Part D - Bonus Question
 --  Which areas of the business have the highest negative impact in sales metrics performance
 --  in 2020 for the 12 week before and after period?
 --      > region
