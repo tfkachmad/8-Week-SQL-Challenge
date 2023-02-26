@@ -1,6 +1,6 @@
 --
 -- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
--- Week 4 - Data Mart
+-- Week 4 - Data Bank
 -- Part A - Customer Nodes Exploration
 --
 -- 1. How many unique nodes are there on the Data Bank system?

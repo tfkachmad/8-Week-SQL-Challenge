@@ -1,6 +1,6 @@
 --
 -- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
--- Week 4 - Data Mart
+-- Week 4 - Data Bank
 -- Part B - Customer Transactions
 --
 -- 1. What is the unique count and total amount for each transaction type?
