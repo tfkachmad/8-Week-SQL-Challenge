@@ -1,5 +1,4 @@
-USE EightWeekSQLChallenge;
----
+--
 -- Case study solutions for the #8WeeksSQLChallenge by Danny Ma
 -- Week 3 - Foodie-Fi
 -- Part A - Customer Journey
