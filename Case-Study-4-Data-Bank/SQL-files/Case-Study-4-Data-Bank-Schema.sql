@@ -1,13 +1,12 @@
-USE EightWeekSQLChallenge;
---CREATE SCHEMA data_bank;
+CREATE SCHEMA data_bank;
+SET search_path = data_bank;
 
-DROP TABLE IF EXISTS data_bank.regions;
-CREATE TABLE data_bank.regions (
+CREATE TABLE regions (
   region_id INTEGER,
   region_name VARCHAR(9)
 );
 
-INSERT INTO data_bank.regions
+INSERT INTO regions
   (region_id, region_name)
 VALUES
   ('1', 'Australia'),
@@ -16,8 +15,8 @@ VALUES
   ('4', 'Asia'),
   ('5', 'Europe');
 
-DROP TABLE IF EXISTS data_bank.customer_nodes;
-CREATE TABLE data_bank.customer_nodes (
+
+CREATE TABLE customer_nodes (
   customer_id INTEGER,
   region_id INTEGER,
   node_id INTEGER,
@@ -25,7 +24,7 @@ CREATE TABLE data_bank.customer_nodes (
   end_date DATE
 );
 
-INSERT INTO data_bank.customer_nodes
+INSERT INTO customer_nodes
   (customer_id, region_id, node_id, start_date, end_date)
 VALUES
   ('1', '3', '4', '2020-01-02', '2020-01-03'),
@@ -3529,15 +3528,14 @@ VALUES
   ('499', '5', '1', '2020-02-03', '9999-12-31'),
   ('500', '2', '2', '2020-04-15', '9999-12-31');
 
-DROP TABLE IF EXISTS data_bank.customer_transactions;
-CREATE TABLE data_bank.customer_transactions (
+CREATE TABLE customer_transactions (
   customer_id INTEGER,
   txn_date DATE,
   txn_type VARCHAR(10),
   txn_amount INTEGER
 );
 
-INSERT INTO data_bank.customer_transactions
+INSERT INTO customer_transactions
   (customer_id, txn_date, txn_type, txn_amount)
 VALUES
   ('429', '2020-01-21', 'deposit', '82'),
