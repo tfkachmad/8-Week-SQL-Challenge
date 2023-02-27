@@ -1,6 +1,6 @@
 # :fishing_pole_and_fish: Case Study 6 - Clique Bait: Solution D. Campaign Analysis
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
+![badge](https://img.shields.io/badge/PostgreSQL-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 Generate a table that has 1 single row for every unique `visit_id` record and has the following columns:
 
@@ -131,7 +131,7 @@ FROM clique_bait.campaign_data;
 | 237     | 005fe7   | 2020-04-02 18:14:08.2577110 | 10         | 4         | 1        | NULL                              | 0          | 0     | Kingfish, Black Truffle, Crab, Oyster                        |
 | 420     | 006a61   | 2020-01-25 20:54:14.6302530 | 10         | 5         | 1        | 25% Off - Living The Lux Life     | 1          | 1     | Tuna, Russian Caviar, Black Truffle, Abalone, Crab           |
 
-<br/>
+<br>
 
 Use the subsequent dataset to generate at least 5 insights for the Clique Bait team.
 
@@ -140,220 +140,164 @@ Some ideas you might want to investigate further include:
 - Identifying users who have received impressions during each campaign period and comparing each metric with other users who did not have an impression event
 
     ```sql
-    WITH sub_CTE
-    AS (
-        SELECT CASE
-                WHEN impression = 1
-                    THEN 'Received Impression'
-                ELSE 'No Impression'
-                END AS ad_impression
-            ,CAST(COUNT(*) AS FLOAT) AS users_cnt
-            ,AVG(page_views) AS page_views_avg
-            ,AVG(cart_adds) AS cart_adds_avg
-            ,COUNT(CASE
-                    WHEN purchase = 1
-                        THEN 1
-                    ELSE NULL
-                    END) AS purchase_count
-        FROM clique_bait.campaign_data
-        WHERE campaign_name IS NOT NULL
-        GROUP BY CASE
-                WHEN impression = 1
-                    THEN 'Received Impression'
-                ELSE 'No Impression'
-                END
-        )
-    SELECT ad_impression
-        ,users_cnt
-        ,page_views_avg
-        ,cart_adds_avg
-        ,purchase_count
-        ,CONCAT (
-            ROUND((purchase_count / users_cnt) * 100, 2)
-            ,'%'
-            ) AS purchase_rate
-    FROM sub_CTE;
+    WITH impressions_agg AS (
+        SELECT
+            CASE ad_impression
+            WHEN 1 THEN
+                'Yes'
+            ELSE
+                'No'
+            END AS received_impressions,
+            COUNT(*) AS visits_total,
+            ROUND(AVG(page_views)) AS page_views_average,
+            ROUND(AVG(cart_adds)) AS cart_adds_average,
+            SUM(purchase) AS purchase_total
+        FROM
+            campaign_result
+        GROUP BY
+            1
+    )
+    SELECT
+        received_impressions,
+        visits_total,
+        page_views_average,
+        cart_adds_average,
+        ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+    FROM
+        impressions_agg
+    ORDER BY
+        2;
     ```
 
     Result:
 
-    | ad_impression       | users_cnt | page_views_avg | cart_adds_avg | purchase_count | purchase_rate |
-    | ------------------- | --------- | -------------- | ------------- | -------------- | ------------- |
-    | Received Impression | 738       | 9              | 5             | 635            | 86.04%        |
-    | No Impression       | 1404      | 7              | 2             | 874            | 62.25%        |
+    | "received_impressions" | "visits_total" | "page_views_average" | "cart_adds_average" | "purchase_rate_percentage" |
+    |------------------------|----------------|----------------------|---------------------|----------------------------|
+    | Yes                    | 876            | 9                    | 12                  | 84.1                       |
+    | No                     | 2688           | 5                    | 4                   | 38.7                       |
 
-    > The average number of page that a users view, the number of cart adds, and the purchase rate is higher on users that received impression ad
+    > The average number of page views, cart adds, and purchase rate is higher on users that received impression ad
 
-    <br/>
+    <br>
 
 - Does clicking on an impression lead to higher purchase rates?
 
     ```sql
-    WITH sub_CTE
-    AS (
-        SELECT CASE
-                WHEN impression = 1
-                    THEN 'Received Impression'
-                ELSE 'No Impression'
-                END AS ad_impression
-            ,CAST(COUNT(*) AS FLOAT) AS users_cnt
-            ,COUNT(CASE
-                    WHEN purchase = 1
-                        THEN 1
-                    ELSE NULL
-                    END) AS purchase_cnt
-        FROM clique_bait.campaign_data
-        WHERE campaign_name IS NOT NULL
-        GROUP BY CASE
-                WHEN impression = 1
-                    THEN 'Received Impression'
-                ELSE 'No Impression'
-                END
-        )
-    SELECT ad_impression
-        ,CONCAT (
-            ROUND((purchase_cnt / users_cnt) * 100, 2)
-            ,'%'
-            ) AS purchase_rate
-    FROM sub_CTE;
+    WITH ad_click_agg AS (
+        SELECT
+            CASE ad_impression
+            WHEN 1 THEN
+                'Yes'
+            ELSE
+                'No'
+            END AS clicked_ad_impressions,
+            COUNT(*) AS visits_total,
+            SUM(purchase) AS purchase_total
+        FROM
+            campaign_result
+        GROUP BY
+            1
+    )
+    SELECT
+        clicked_ad_impressions,
+        ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+    FROM
+        ad_click_agg
+    ORDER BY
+        2 DESC;
     ```
 
     Result:
 
-    | ad_impression       | purchase_rate |
-    | ------------------- | ------------- |
-    | Received Impression | 86.04%        |
-    | No Impression       | 62.25%        |
+    | "clicked_ad_impressions" | "purchase_rate_percentage" |
+    |--------------------------|----------------------------|
+    | Yes                      | 84.1                       |
+    | No                       | 38.7                       |
 
-    > The purchase rate for users that received impression ad on campaign is higher than users that not.
+    > The purchase rate for users that clicked ad impressions is higher than for users that not.
 
-    <br/>
+    <br>
 
-- What is the uplift in purchase rate when comparing users who click on a campaign impression versus users who do not receive an impression? What if we compare them with users who just an impression but do not click?
+- What is the uplift in purchase rate when comparing users who click on a campaign impression versus users who do not receive an impression? What if we compare them with users who just see an impression but do not click?
 
     ```sql
-    WITH sub_CTE
-    AS (
-        SELECT CASE
-                WHEN click = 1 AND impression = 1
-                    THEN 'Click Impression Ad'
-                WHEN click = 0 AND impression = 1
-                    THEN 'Just See Impression Ad'
-                ELSE 'No Impression'
-                END AS ad_impression
-            ,CAST(COUNT(*) AS FLOAT) AS users_cnt
-            ,COUNT(CASE
-                    WHEN purchase = 1
-                        THEN 1
-                    ELSE NULL
-                    END) AS purchase_cnt
-        FROM clique_bait.campaign_data
-        WHERE campaign_name IS NOT NULL
-        GROUP BY CASE
-                WHEN click = 1 AND impression = 1
-                    THEN 'Click Impression Ad'
-                WHEN click = 0 AND impression = 1
-                    THEN 'Just See Impression Ad'
-                ELSE 'No Impression'
-                END
-        )
-    SELECT ad_impression, purchase_cnt
-        ,CONCAT (
-            ROUND((purchase_cnt / users_cnt) * 100, 2)
-            ,'%'
-            ) AS purchase_rate
-    FROM sub_CTE;
+    WITH comparison AS (
+        SELECT
+            CASE WHEN ad_click = 1 THEN
+                'Clicking the ads'
+            WHEN ad_click = 0
+                AND ad_impression = 1 THEN
+                'Only see the ads'
+            WHEN ad_impression = 0 THEN
+                'Received no ads'
+            END AS user_comparison,
+            COUNT(*) AS visits_total,
+            SUM(purchase) AS purchase_total
+        FROM
+            campaign_result
+        WHERE
+            campaign_name IS NOT NULL
+        GROUP BY
+            1
+    )
+    SELECT
+        user_comparison,
+        ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+    FROM
+        comparison;
     ```
 
     Result:
 
-    | ad_impression          | purchase_cnt | purchase_rate |
-    | ---------------------- | ------------ | ------------- |
-    | Just See Impression Ad | 98           | 70.5%         |
-    | No Impression          | 874          | 62.25%        |
-    | Click Impression Ad    | 537          | 89.65%        |
+    | "user_comparison" | "purchase_rate_percentage" |
+    |-------------------|----------------------------|
+    | Clicking the ads  | 89.6                       |
+    | Only see the ads  | 66.2                       |
+    | Received no ads   | 37.9                       |
 
-    > The purchase rate for users that see and click the ads is higher than user that only see the ads and users that not see/clicking the ads.
+    > The purchase rate for users that click the ads impression and only viewed the ads impression is higher than user that not received any ads impression.
 
-    <br/>
+    <br>
 
 - What metrics can you use to quantify the success or failure of each campaign compared to eachother?
 
     ```sql
-    WITH sub_CTE
-    AS (
-        SELECT campaign_name
-            ,CAST(COUNT(*) AS FLOAT) AS users_cnt
-            ,AVG(page_views) AS page_views_avg
-            ,AVG(cart_adds) AS cart_adds_avg
-            ,COUNT(CASE
-                    WHEN purchase = 1
-                        THEN 1
-                    ELSE NULL
-                    END) AS purchase_count
-        FROM clique_bait.campaign_data
-        WHERE campaign_name IS NOT NULL
-        GROUP BY campaign_name
-        )
-    SELECT *
-        ,CONCAT (
-            ROUND((purchase_count / users_cnt) * 100, 2)
-            ,'%'
-            ) AS purchase_rate
-    FROM sub_CTE;
+    WITH campaign_agg AS (
+        SELECT
+            CASE WHEN campaign_name IS NULL THEN
+                'No Campaign'
+            ELSE
+                campaign_name
+            END AS campaigns,
+            COUNT(*) AS visits_total,
+            SUM(purchase) AS purchase_total,
+            ROUND(AVG(page_views)) AS page_views_average,
+            ROUND(AVG(cart_adds)) AS cart_adds_average
+        FROM
+            campaign_result
+        GROUP BY
+            1
+    )
+    SELECT
+        campaigns,
+        visits_total,
+        purchase_total,
+        page_views_average,
+        cart_adds_average,
+        ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+    FROM
+        campaign_agg;
     ```
 
     Result:
 
-    | campaign_name                     | users_cnt | page_views_avg | cart_adds_avg | purchase_count | purchase_rate |
-    | --------------------------------- | --------- | -------------- | ------------- | -------------- | ------------- |
-    | BOGOF - Fishing For Compliments   | 180       | 8              | 3             | 127            | 70.56%        |
-    | Half Off - Treat Your Shellf(ish) | 1675      | 8              | 3             | 1180           | 70.45%        |
-    | 25% Off - Living The Lux Life     | 287       | 8              | 3             | 202            | 70.38%        |
+    | "campaigns"                       | "visits_total" | "purchase_total" | "page_views_average" | "cart_adds_average" | "purchase_rate_percentage" |
+    |-----------------------------------|----------------|------------------|----------------------|---------------------|----------------------------|
+    | No Campaign                       | 512            | 268              | 7                    | 6                   | 52.3                       |
+    | BOGOF - Fishing For Compliments   | 260            | 127              | 6                    | 6                   | 48.8                       |
+    | Half Off - Treat Your Shellf(ish) | 2388           | 1180             | 6                    | 6                   | 49.4                       |
+    | 25% Off - Living The Lux Life     | 404            | 202              | 7                    | 7                   | 50.0                       |
 
-    > The number of visit by users and the number of item purchased by users can be used to quantify a campaign success or failure.
+    > The number of visits for each campaign could be the indicator on how effective a campaign is. From the result, the Half Off - Treat Your Shellf(ish) campaign attracted more than 2000 visits, which is 4 times more web visits than when there's no campaign.
 
-    <br/>
-
-- What is the purchase rate when there is campaign vs. when there is no campaign?
-
-    ```sql
-    WITH sub_CTE
-    AS (
-        SELECT CASE
-                WHEN campaign_name IS NULL
-                    THEN 'No Campaign'
-                ELSE 'Campaign'
-                END AS campaign
-            ,CAST(COUNT(*) AS FLOAT) AS users_cnt
-            ,AVG(page_views) AS page_views_avg
-            ,AVG(cart_adds) AS cart_adds_avg
-            ,COUNT(CASE
-                    WHEN purchase = 1
-                        THEN 1
-                    ELSE NULL
-                    END) AS purchase_cnt
-        FROM clique_bait.campaign_data
-        GROUP BY CASE
-                WHEN campaign_name IS NULL
-                    THEN 'No Campaign'
-                ELSE 'Campaign'
-                END
-        )
-    SELECT campaign
-        ,purchase_cnt
-        ,CONCAT (
-            ROUND((purchase_cnt / users_cnt) * 100, 2)
-            ,'%'
-            ) AS purchase_rate
-    FROM sub_CTE;
-    ```
-
-    Result:
-
-    | campaign    | purchase_cnt | purchase_rate |
-    | ----------- | ------------ | ------------- |
-    | No Campaign | 268          | 72.83%        |
-    | Campaign    | 1509         | 70.45%        |
-
-    > Yes. Campaign made user purchase more products from Clique Bait website than without campaign.
+---

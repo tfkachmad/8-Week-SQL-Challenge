@@ -1,323 +1,193 @@
-USE EightWeekSQLChallenge;
 --
-/*
-	========	D. CAMPAIGN ANALYSIS		========
-*/
+-- Case study solutions for #8WeeksSQLChallenge by Danny Ma
+-- Week 6 - Clique Bait
+-- Part D - Campaign Analysis
 --
---	Generate a table that has 1 single row for every unique visit_id record and has the following columns:
---	+	user_id
---	+	visit_id
---	+	visit_start_time: the earliest event_time for each visit
---	+	page_views: count of page views for each visit
---	+	cart_adds: count of product cart add events for each visit
---	+	purchase: 1/0 flag if a purchase event exists for each visit
---	+	campaign_name: map the visit to a campaign if the visit_start_time falls between the start_date and end_date
---	+	impression: count of ad impressions for each visit
---	+	click: count of ad clicks for each visit
---	+	(Optional column) cart_products: a comma separated text value with products added to the cart sorted by the order they were added to the cart (hint: use the sequence_number)
---
-SELECT *
-FROM clique_bait.events AS e
-JOIN clique_bait.event_identifier AS ei
-	ON e.event_type = ei.event_type
-JOIN clique_bait.page_hierarchy AS p
-	ON e.page_id = p.page_id
-JOIN clique_bait.users AS u
-	ON e.cookie_id = u.cookie_id
---
-DROP TABLE
-IF EXISTS clique_bait.campaign_data;
-	WITH sub_CTE
-	AS (
-		-- user_id, visit_id, visit_start_time, page_views
-		SELECT u.[user_id]
-			,e.visit_id
-			,MIN(e.event_time) AS visit_start_time
-			,COUNT(DISTINCT e.page_id) AS page_views
-			-- Finding the value for cart_adds column
-			,COUNT(CASE 
-					WHEN ei.event_name LIKE 'Add to Cart'
-						THEN 1
-					ELSE NULL
-					END) AS cart_adds
-			-- Finding the value for impression column
-			,COUNT(CASE 
-					WHEN ei.event_name LIKE 'Ad Impression'
-						THEN 1
-					ELSE NULL
-					END) AS impression
-			-- Finding the value for click column
-			,COUNT(CASE 
-					WHEN ei.event_name LIKE 'Ad Click'
-						THEN 1
-					ELSE NULL
-					END) AS click
-		FROM clique_bait.events AS e
-		JOIN clique_bait.event_identifier AS ei
-			ON e.event_type = ei.event_type
-		JOIN clique_bait.users AS u
-			ON e.cookie_id = u.cookie_id
-		GROUP BY u.[user_id]
-			,e.visit_id
-		)
-		,find_purchase_CTE
-	AS (
-		SELECT DISTINCT e.visit_id
-		FROM clique_bait.events AS e
-		JOIN clique_bait.event_identifier AS ei
-			ON e.event_type = ei.event_type
-		WHERE ei.event_name LIKE 'Purchase'
-		)
-		,purchase_CTE
-	AS (
-		SELECT *
-			-- Finding the value of purchase column
-			,CASE 
-				WHEN visit_id IN (
-						SELECT visit_id
-						FROM find_purchase_CTE
-						)
-					THEN 1
-				ELSE 0
-				END AS purchase
-		FROM sub_CTE
-		)
-		,campaign_CTE
-	AS (
-		SELECT sub.*
-			-- Creating campaign_name column
-			,c.campaign_name
-		FROM purchase_CTE AS sub
-		LEFT JOIN clique_bait.campaign_identifier AS c
-			ON sub.visit_start_time BETWEEN c.start_date
-					AND c.end_date
-		)
-		,products_CTE
-	AS (
-		SELECT e.visit_id
-			-- Creating products column
-			,STRING_AGG(p.page_name, ', ') WITHIN
-		GROUP (
-				ORDER BY e.sequence_number
-				) AS products
-		FROM clique_bait.events AS e
-		JOIN clique_bait.page_hierarchy AS p
-			ON e.page_id = p.page_id
-		JOIN clique_bait.event_identifier AS ei
-			ON e.event_type = ei.event_type
-		WHERE p.product_category IS NOT NULL
-			AND ei.event_name LIKE 'Add to Cart'
-		GROUP BY e.visit_id
-		)
-	SELECT [user_id]
-		,c.visit_id
-		,visit_start_time
-		,page_views
-		,cart_adds
-		,purchase
-		,campaign_name
-		,impression
-		,click
-		,products
-	INTO clique_bait.campaign_data
-	FROM campaign_CTE AS c
-	JOIN products_CTE AS p
-		ON c.visit_id = p.visit_id;
---
--- campaign_data table result
-SELECT *
-FROM clique_bait.campaign_data;
---
---	Use the subsequent dataset to generate at least 5 insights for the Clique Bait team.
---	Some ideas you might want to investigate further include:
---	+	Identifying users who have received impressions during each campaign period 
---		and comparing each metric with other users who did not have an impression event
---
-WITH sub_CTE
-AS (
-	SELECT CASE 
-			WHEN impression = 1
-				THEN 'Received Impression'
-			ELSE 'No Impression'
-			END AS ad_impression
-		,CAST(COUNT(*) AS FLOAT) AS users_cnt
-		,AVG(page_views) AS page_views_avg
-		,AVG(cart_adds) AS cart_adds_avg
-		,COUNT(CASE 
-				WHEN purchase = 1
-					THEN 1
-				ELSE NULL
-				END) AS purchase_count
-	FROM clique_bait.campaign_data
-	WHERE campaign_name IS NOT NULL
-	GROUP BY CASE 
-			WHEN impression = 1
-				THEN 'Received Impression'
-			ELSE 'No Impression'
-			END
-	)
-SELECT ad_impression
-	,users_cnt
-	,page_views_avg
-	,cart_adds_avg
-	,purchase_count
-	,CONCAT (
-		ROUND((purchase_count / users_cnt) * 100, 2)
-		,'%'
-		) AS purchase_rate
-FROM sub_CTE;
-/*
-	ad_impression       users_cnt              page_views_avg cart_adds_avg purchase_count purchase_rate
-	------------------- ---------------------- -------------- ------------- -------------- ------------------------
-	Received Impression 738                    9              5             635            86.04%
-	No Impression       1404                   7              2             874            62.25%
-*/
---
---	+	Does clicking on an impression lead to higher purchase rates?
-WITH sub_CTE
-AS (
-	SELECT CASE 
-			WHEN impression = 1
-				THEN 'Received Impression'
-			ELSE 'No Impression'
-			END AS ad_impression
-		,CAST(COUNT(*) AS FLOAT) AS users_cnt
-		,COUNT(CASE 
-				WHEN purchase = 1
-					THEN 1
-				ELSE NULL
-				END) AS purchase_cnt
-	FROM clique_bait.campaign_data
-	WHERE campaign_name IS NOT NULL
-	GROUP BY CASE 
-			WHEN impression = 1
-				THEN 'Received Impression'
-			ELSE 'No Impression'
-			END
-	)
-SELECT ad_impression
-	,CONCAT (
-		ROUND((purchase_cnt / users_cnt) * 100, 2)
-		,'%'
-		) AS purchase_rate
-FROM sub_CTE;
-/*
-	ad_impression       purchase_rate
-	------------------- ------------------------
-	Received Impression 86.04%
-	No Impression       62.25%
-*/
---	+	What is the uplift in purchase rate when comparing users who click 
---		on a campaign impression versus users who do not receive an impression? 
---		What if we compare them with users who just see an impression but do not click?
-WITH sub_CTE
-AS (
-	SELECT CASE 
-			WHEN click = 1
-				AND impression = 1
-				THEN 'Click Impression Ad'
-			WHEN click = 0
-				AND impression = 1
-				THEN 'Just See Impression Ad'
-			ELSE 'No Impression'
-			END AS ad_impression
-		,CAST(COUNT(*) AS FLOAT) AS users_cnt
-		,COUNT(CASE 
-				WHEN purchase = 1
-					THEN 1
-				ELSE NULL
-				END) AS purchase_cnt
-	FROM clique_bait.campaign_data
-	WHERE campaign_name IS NOT NULL
-	GROUP BY CASE 
-			WHEN click = 1
-				AND impression = 1
-				THEN 'Click Impression Ad'
-			WHEN click = 0
-				AND impression = 1
-				THEN 'Just See Impression Ad'
-			ELSE 'No Impression'
-			END
-	)
-SELECT ad_impression
-	,purchase_cnt
-	,CONCAT (
-		ROUND((purchase_cnt / users_cnt) * 100, 2)
-		,'%'
-		) AS purchase_rate
-FROM sub_CTE;
-/*
-	ad_impression          purchase_cnt purchase_rate
-	---------------------- ------------ ------------------------
-	Just See Impression Ad 98           70.5%
-	No Impression          874          62.25%
-	Click Impression Ad    537          89.65%
-*/
---
---	+	What metrics can you use to quantify the success or failure of each campaign 
---		compared to eachother?
-WITH sub_CTE
-AS (
-	SELECT campaign_name
-		,CAST(COUNT(*) AS FLOAT) AS users_cnt
-		,AVG(page_views) AS page_views_avg
-		,AVG(cart_adds) AS cart_adds_avg
-		,COUNT(CASE 
-				WHEN purchase = 1
-					THEN 1
-				ELSE NULL
-				END) AS purchase_count
-	FROM clique_bait.campaign_data
-	WHERE campaign_name IS NOT NULL
-	GROUP BY campaign_name
-	)
-SELECT *
-	,CONCAT (
-		ROUND((purchase_count / users_cnt) * 100, 2)
-		,'%'
-		) AS purchase_rate
-FROM sub_CTE;
-/*
-	campaign_name                     users_cnt              page_views_avg cart_adds_avg purchase_count purchase_rate
-	--------------------------------- ---------------------- -------------- ------------- -------------- ------------------------
-	BOGOF - Fishing For Compliments   180                    8              3             127            70.56%
-	Half Off - Treat Your Shellf(ish) 1675                   8              3             1180           70.45%
-	25% Off - Living The Lux Life     287                    8              3             202            70.38%
-*/
---
---	+	What is the purchase rate when there is campaign vs. when there is no campaign?
-WITH sub_CTE
-AS (
-	SELECT CASE 
-			WHEN campaign_name IS NULL
-				THEN 'No Campaign'
-			ELSE 'Campaign'
-			END AS campaign
-		,CAST(COUNT(*) AS FLOAT) AS users_cnt
-		,AVG(page_views) AS page_views_avg
-		,AVG(cart_adds) AS cart_adds_avg
-		,COUNT(CASE 
-				WHEN purchase = 1
-					THEN 1
-				ELSE NULL
-				END) AS purchase_cnt
-	FROM clique_bait.campaign_data
-	GROUP BY CASE 
-			WHEN campaign_name IS NULL
-				THEN 'No Campaign'
-			ELSE 'Campaign'
-			END
-	)
-SELECT campaign
-	,purchase_cnt
-	,CONCAT (
-		ROUND((purchase_cnt / users_cnt) * 100, 2)
-		,'%'
-		) AS purchase_rate
-FROM sub_CTE;
-	/*
-	campaign    purchase_cnt purchase_rate
-	----------- ------------ ------------------------
-	No Campaign 268          72.83%
-	Campaign    1509         70.45%
-*/
+-- Generate a table that has 1 single row for every unique visit_id record and has
+-- the following columns:
+--      - user_id
+--      - visit_id
+--      - visit_start_time: the earliest event_time for each visit
+--      - page_views: count of page views for each visit
+--      - cart_adds: count of product cart add events for each visit
+--      - purchase: 1/0 flag if a purchase event exists for each visit
+--      - campaign_name: map the visit to a campaign if the visit_start_time falls
+--          between the start_date and end_date
+--      - impression: count of ad impressions for each visit
+--      - click: count of ad clicks for each visit
+--      - (Optional column) cart_products: a comma separated text value with products
+--          added to the cart sorted by the order they were added to the cart
+--          (hint: use the sequence_number)
+SET search_path = 'clique_bait';
+
+CREATE TEMPORARY TABLE IF NOT EXISTS campaign_result AS
+WITH visit_with_purchase AS (
+    SELECT DISTINCT
+        visit_id
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.event_identifier AS e2 ON e1.event_type = e2.event_type
+    WHERE
+        e2.event_name = 'Purchase'
+)
+SELECT
+    u.user_Id,
+    e1.visit_id,
+    MIN(e1.event_time) AS visit_start_time,
+    COUNT(DISTINCT e1.page_id) AS page_views,
+    SUM(
+        CASE WHEN p.product_category IS NOT NULL THEN
+            1
+        ELSE
+            0
+        END) AS cart_adds,
+    MAX(
+        CASE WHEN e1.visit_id IN (
+            SELECT
+                visit_id
+            FROM visit_with_purchase) THEN
+            1
+        ELSE
+            0
+        END) AS purchase,
+    MIN(c.campaign_name) AS campaign_name,
+    SUM(
+        CASE WHEN e2.event_name = 'Ad Impression' THEN
+            1
+        ELSE
+            0
+        END) AS ad_impression,
+    SUM(
+        CASE WHEN e2.event_name = 'Ad Click' THEN
+            1
+        ELSE
+            0
+        END) AS ad_click,
+    STRING_AGG(
+        CASE WHEN p.product_category IS NOT NULL THEN
+            p.page_name
+        ELSE
+            NULL
+        END, ', ' ORDER BY e1.sequence_number)
+FROM
+    clique_bait.events AS e1
+    JOIN clique_bait.users AS u ON e1.cookie_id = u.cookie_id
+    LEFT JOIN clique_bait.campaign_identifier AS c ON e1.event_time BETWEEN c.start_date AND c.end_date
+    JOIN clique_bait.event_identifier AS e2 ON e1.event_type = e2.event_type
+    JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+GROUP BY
+    u.user_Id,
+    e1.visit_id,
+    c.campaign_name;
+
+-- Use the subsequent dataset to generate at least 5 insights for the Clique Bait team
+-- Some ideas you might want to investigate further include:
+--      - Identifying users who have received impressions during each campaign period and
+--      comparing each metric with other users who did not have an impression event
+WITH impressions_agg AS (
+    SELECT
+        CASE ad_impression
+        WHEN 1 THEN
+            'Yes'
+        ELSE
+            'No'
+        END AS received_impressions,
+        COUNT(*) AS visits_total,
+        ROUND(AVG(page_views)) AS page_views_average,
+        ROUND(AVG(cart_adds)) AS cart_adds_average,
+        SUM(purchase) AS purchase_total
+    FROM
+        campaign_result
+    GROUP BY
+        1
+)
+SELECT
+    received_impressions,
+    visits_total,
+    page_views_average,
+    cart_adds_average,
+    ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+FROM
+    impressions_agg
+ORDER BY
+    2;
+
+--      - Does clicking on an impression lead to higher purchase rates?
+WITH ad_click_agg AS (
+    SELECT
+        CASE ad_impression
+        WHEN 1 THEN
+            'Yes'
+        ELSE
+            'No'
+        END AS clicked_ad_impressions,
+        COUNT(*) AS visits_total,
+        SUM(purchase) AS purchase_total
+    FROM
+        campaign_result
+    GROUP BY
+        1
+)
+SELECT
+    clicked_ad_impressions,
+    ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+FROM
+    ad_click_agg
+ORDER BY
+    2 DESC;
+
+--      - What is the uplift in purchase rate when comparing users who click on a campaign
+--      impression versus users who do not receive an impression?
+--      - What if we compare them with users who just an see impression but do not click?
+WITH comparison AS (
+    SELECT
+        CASE WHEN ad_click = 1 THEN
+            'Clicking the ads'
+        WHEN ad_click = 0
+            AND ad_impression = 1 THEN
+            'Only see the ads'
+        WHEN ad_impression = 0 THEN
+            'Received no ads'
+        END AS user_comparison,
+        COUNT(*) AS visits_total,
+        SUM(purchase) AS purchase_total
+    FROM
+        campaign_result
+    WHERE
+        campaign_name IS NOT NULL
+    GROUP BY
+        1
+)
+SELECT
+    user_comparison,
+    ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+FROM
+    comparison;
+
+--      - What metrics can you use to quantify the success or failure of each campaign compared
+--      to each other?
+WITH campaign_agg AS (
+    SELECT
+        CASE WHEN campaign_name IS NULL THEN
+            'No Campaign'
+        ELSE
+            campaign_name
+        END AS campaigns,
+        COUNT(*) AS visits_total,
+        SUM(purchase) AS purchase_total,
+        ROUND(AVG(page_views)) AS page_views_average,
+        ROUND(AVG(cart_adds)) AS cart_adds_average
+    FROM
+        campaign_result
+    GROUP BY
+        1
+)
+SELECT
+    campaigns,
+    visits_total,
+    purchase_total,
+    page_views_average,
+    cart_adds_average,
+    ROUND((100 * purchase_total / visits_total::NUMERIC), 1) AS purchase_rate_percentage
+FROM
+    campaign_agg;
