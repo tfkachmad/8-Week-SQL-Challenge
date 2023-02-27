@@ -1,6 +1,6 @@
 # :fishing_pole_and_fish: Case Study 6 - Clique Bait: Solution C. Product Funnel Analysis
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
+![badge](https://img.shields.io/badge/PostgreSQL-4169e1?style=for-the-badge&logo=postgresql&logoColor=white)
 
 Using a single SQL query - create a new output table which has the following details:
 
@@ -9,213 +9,223 @@ Using a single SQL query - create a new output table which has the following det
 - How many times was each product added to a cart but not purchased (abandoned)?
 - How many times was each product purchased?
 
-Create `products_details` table:
+Create `product_funnel` table to display the aggregated result on product name level.
 
 ```sql
-DROP TABLE
-IF EXISTS clique_bait.products_details;
-    WITH views_CTE
-    AS (
-        SELECT p.page_name
-            ,COUNT(*) AS views_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        WHERE p.product_category IS NOT NULL
-        GROUP BY p.page_name
-        )
-        ,add_to_cart_CTE
-    AS (
-        SELECT p.page_name
-            ,COUNT(*) AS added_to_cart_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-        GROUP BY p.page_name
-        )
-        ,purchase_CTE
-    AS (
-        SELECT DISTINCT e.visit_id
-        FROM clique_bait.events AS e
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE ei.event_name LIKE 'purchase'
-        )
-        ,add_to_cart_only_CTE
-    AS (
-        SELECT p.page_name
-            ,COUNT(*) AS added_to_cart_only_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-            AND e.visit_id NOT IN (
-                SELECT visit_id
-                FROM purchase_CTE
-                )
-        GROUP BY p.page_name
-        )
-        ,purchased_CTE
-    AS (
-        SELECT p.page_name
-            ,COUNT(*) AS purchase_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-            AND e.visit_id IN (
-                SELECT visit_id
-                FROM purchase_CTE
-                )
-        GROUP BY p.page_name
-        )
-    SELECT v.page_name AS product_name
-        ,views_count
-        ,added_to_cart_count
-        ,added_to_cart_only_count
-        ,purchase_count
-    INTO clique_bait.products_details
-    FROM views_CTE AS v
-    JOIN add_to_cart_CTE AS c
-        ON v.page_name = c.page_name
-    JOIN add_to_cart_only_CTE AS co
-        ON v.page_name = co.page_name
-    JOIN purchased_CTE AS p
-        ON v.page_name = p.page_name
-    ORDER BY v.page_name;
---
---	products_details table result
-SELECT *
-FROM clique_bait.products_details;
+SET search_path = 'clique_bait';
+
+CREATE TEMPORARY TABLE IF NOT EXISTS product_funnel AS
+WITH product_views AS (
+    SELECT
+        p.page_name AS product_name,
+        COUNT(*) AS viewed_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%View'
+        AND p.product_category IS NOT NULL
+    GROUP BY
+        1
+),
+product_added_to_cart AS (
+    SELECT
+        p.page_name AS product_name,
+        COUNT(*) AS added_to_cart_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+    GROUP BY
+        1
+),
+visit_with_purchase AS (
+    SELECT
+        visit_id
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name = 'Purchase'
+),
+product_abandoned AS (
+    SELECT
+        p.page_name AS product_name,
+        COUNT(*) AS added_to_cart_only_num
+FROM
+    clique_bait.events AS e1
+    JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+    JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+        AND e1.visit_id NOT IN (
+            SELECT
+                visit_id
+            FROM
+                visit_with_purchase)
+        GROUP BY
+            1
+),
+product_purchased AS (
+    SELECT
+        p.page_name AS product_name,
+        COUNT(*) AS purchased_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+        AND e1.visit_id IN (
+            SELECT
+                visit_id
+            FROM
+                visit_with_purchase)
+        GROUP BY
+            1
+)
+SELECT
+    p1.product_name,
+    p1.viewed_num,
+    p2.added_to_cart_num,
+    p3.added_to_cart_only_num,
+    p4.purchased_num
+FROM
+    product_views AS p1
+    JOIN product_added_to_cart AS p2 ON p1.product_name = p2.product_name
+    JOIN product_abandoned AS p3 ON p1.product_name = p3.product_name
+    JOIN product_purchased AS p4 ON p1.product_name = p4.product_name
+ORDER BY
+    2 DESC;
 ```
 
-`products_details` table:
+`product_funnel` table:
 
-| product_name   | views_count | added_to_cart_count | added_to_cart_only_count | purchase_count |
-|----------------|-------------|---------------------|--------------------------|----------------|
-| Abalone        | 2457        | 932                 | 233                      | 699            |
-| Black Truffle  | 2393        | 924                 | 217                      | 707            |
-| Crab           | 2513        | 949                 | 230                      | 719            |
-| Kingfish       | 2479        | 920                 | 213                      | 707            |
-| Lobster        | 2515        | 968                 | 214                      | 754            |
-| Oyster         | 2511        | 943                 | 217                      | 726            |
-| Russian Caviar | 2509        | 946                 | 249                      | 697            |
-| Salmon         | 2497        | 938                 | 227                      | 711            |
-| Tuna           | 2446        | 931                 | 234                      | 697            |
+| "product_name" | "viewed_num" | "added_to_cart_num" | "added_to_cart_only_num" | "purchased_num" |
+|----------------|--------------|---------------------|--------------------------|-----------------|
+| Oyster         | 1568         | 943                 | 217                      | 726             |
+| Crab           | 1564         | 949                 | 230                      | 719             |
+| Russian Caviar | 1563         | 946                 | 249                      | 697             |
+| Salmon         | 1559         | 938                 | 227                      | 711             |
+| Kingfish       | 1559         | 920                 | 213                      | 707             |
+| Lobster        | 1547         | 968                 | 214                      | 754             |
+| Abalone        | 1525         | 932                 | 233                      | 699             |
+| Tuna           | 1515         | 931                 | 234                      | 697             |
+| Black Truffle  | 1469         | 924                 | 217                      | 707             |
 
-<br/>
+<br>
 
 - Additionally, create another table which further aggregates the data for the above points but this time for each product category instead of individual products.
 
-Create `product_category_details` table:
+Create `category_funnel` table that display the aggregated result on the product category level:
 
 ```sql
-DROP TABLE
-IF EXISTS clique_bait.product_category_details;
-    WITH views_CTE
-    AS (
-        SELECT p.product_category
-            ,COUNT(*) AS views_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        WHERE p.product_category IS NOT NULL
-        GROUP BY p.product_category
-        )
-        ,add_to_cart_CTE
-    AS (
-        SELECT p.product_category
-            ,COUNT(*) AS added_to_cart_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-        GROUP BY p.product_category
-        )
-        ,purchase_CTE
-    AS (
-        SELECT DISTINCT e.visit_id
-        FROM clique_bait.events AS e
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE ei.event_name LIKE 'purchase'
-        )
-        ,add_to_cart_only_CTE
-    AS (
-        SELECT p.product_category
-            ,COUNT(*) AS added_to_cart_only_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-            AND e.visit_id NOT IN (
-                SELECT visit_id
-                FROM purchase_CTE
-                )
-        GROUP BY p.product_category
-        )
-        ,purchased_CTE
-    AS (
-        SELECT p.product_category
-            ,COUNT(*) AS purchase_count
-        FROM clique_bait.events AS e
-        JOIN clique_bait.page_hierarchy AS p
-            ON e.page_id = p.page_id
-        JOIN clique_bait.event_identifier AS ei
-            ON e.event_type = ei.event_type
-        WHERE p.product_category IS NOT NULL
-            AND ei.event_name LIKE 'Add%'
-            AND e.visit_id IN (
-                SELECT visit_id
-                FROM purchase_CTE
-                )
-        GROUP BY p.product_category
-        )
-    SELECT v.product_category
-        ,views_count
-        ,added_to_cart_count
-        ,added_to_cart_only_count
-        ,purchase_count
-    INTO clique_bait.product_category_details
-    FROM views_CTE AS v
-    JOIN add_to_cart_CTE AS c
-        ON v.product_category = c.product_category
-    JOIN add_to_cart_only_CTE AS co
-        ON v.product_category = co.product_category
-    JOIN purchased_CTE AS p
-        ON v.product_category = p.product_category
-    ORDER BY v.product_category;
---
--- product_category_details table result
-SELECT *
-FROM clique_bait.product_category_details;
+CREATE TEMPORARY TABLE IF NOT EXISTS category_funnel AS
+WITH product_category_views AS (
+    SELECT
+        p.product_category,
+        COUNT(*) AS viewed_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%View'
+        AND p.product_category IS NOT NULL
+    GROUP BY
+        1
+),
+product_category_added_to_cart AS (
+    SELECT
+        p.product_category,
+        COUNT(*) AS added_to_cart_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+    GROUP BY
+        1
+),
+visit_with_purchase AS (
+    SELECT
+        visit_id
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name = 'Purchase'
+),
+product_category_abandoned AS (
+    SELECT
+        p.product_category,
+        COUNT(*) AS added_to_cart_only_num
+FROM
+    clique_bait.events AS e1
+    JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+    JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+        AND e1.visit_id NOT IN (
+            SELECT
+                visit_id
+            FROM
+                visit_with_purchase)
+        GROUP BY
+            1
+),
+product_category_purchased AS (
+    SELECT
+        p.product_category,
+        COUNT(*) AS purchased_num
+    FROM
+        clique_bait.events AS e1
+        JOIN clique_bait.page_hierarchy AS p ON e1.page_id = p.page_id
+        JOIN clique_bait.event_identifier AS e2 ON e2.event_type = e1.event_type
+    WHERE
+        e2.event_name LIKE '%Cart'
+        AND p.product_category IS NOT NULL
+        AND e1.visit_id IN (
+            SELECT
+                visit_id
+            FROM
+                visit_with_purchase)
+        GROUP BY
+            1
+)
+SELECT
+    p1.product_category,
+    p1.viewed_num,
+    p2.added_to_cart_num,
+    p3.added_to_cart_only_num,
+    p4.purchased_num
+FROM
+    product_category_views AS p1
+    JOIN product_category_added_to_cart AS p2 ON p1.product_category = p2.product_category
+    JOIN product_category_abandoned AS p3 ON p1.product_category = p3.product_category
+    JOIN product_category_purchased AS p4 ON p1.product_category = p4.product_category
+ORDER BY
+    2 DESC;
 ```
 
 `product_category_details` table:
 
-| product_category | views_count | added_to_cart_count | added_to_cart_only_count | purchase_count |
-|------------------|-------------|---------------------|--------------------------|----------------|
-| Fish             | 7422        | 2789                | 674                      | 2115           |
-| Luxury           | 4902        | 1870                | 466                      | 1404           |
-| Shellfish        | 9996        | 3792                | 894                      | 2898           |
+| "product_category" | "viewed_num" | "added_to_cart_num" | "added_to_cart_only_num" | "purchased_num" |
+|--------------------|--------------|---------------------|--------------------------|-----------------|
+| Shellfish          | 6204         | 3792                | 894                      | 2898            |
+| Fish               | 4633         | 2789                | 674                      | 2115            |
+| Luxury             | 3032         | 1870                | 466                      | 1404            |
 
-<br/>
+<br>
 
 Use your 2 new output tables - answer the following questions:
 
@@ -224,168 +234,123 @@ Use your 2 new output tables - answer the following questions:
     Query:
 
     ```sql
-    -- Finding the maximum from views_count, added_to_cart_count, purchase_count column
-    WITH max_CTE
-    AS (
-        SELECT MAX(views_count) AS most_views
-            ,MAX(added_to_cart_count) AS most_cart_adds
-            ,MAX(purchase_count) AS most_purchases
-        FROM clique_bait.products_details
-        )
-        -- Finding the product with maximum views_count
-        ,views_CTE
-    AS (
-        SELECT product_name AS most_viewed_product
-        FROM clique_bait.products_details
-        WHERE views_count = (
-                SELECT most_views
-                FROM max_CTE
-                )
-        )
-        -- Finding the product with maximum added_to_cart_count
-        ,cart_CTE
-    AS (
-        SELECT product_name AS most_added_to_cart_product
-        FROM clique_bait.products_details
-        WHERE added_to_cart_count = (
-                SELECT most_cart_adds
-                FROM max_CTE
-                )
-        )
-        -- Finding the product with maximum purchase_count
-        ,purchase_CTE
-    AS (
-        SELECT product_name AS most_purchased_product
-        FROM clique_bait.products_details
-        WHERE purchase_count = (
-                SELECT most_purchases
-                FROM max_CTE
-                )
-        )
-    SELECT *
-    FROM views_CTE
-        ,cart_CTE
-        ,purchase_CTE;
+    WITH product_ranking AS (
+        SELECT
+            product_name,
+            RANK() OVER (ORDER BY viewed_num DESC,
+                added_to_cart_num DESC,
+                purchased_num DESC) AS rank1,
+            RANK() OVER (ORDER BY added_to_cart_num DESC) AS rank2,
+            RANK() OVER (ORDER BY purchased_num DESC) AS rank3
+        FROM
+            product_funnel
+    )
+    SELECT
+        p1.product_name AS most_viewed_product,
+        p2.product_name AS most_added_to_cart_product,
+        p3.product_name AS most_purchased_product
+    FROM
+        product_ranking AS p1
+        JOIN product_ranking AS p2 ON p1.rank1 = p2.rank2
+        JOIN product_ranking AS p3 ON p2.rank2 = p3.rank3
+    WHERE
+        p1.rank1 = 1;
     ```
 
     Output:
 
-    | most_viewed_product | most_added_to_cart_product | most_purchased_product |
-    |---------------------|----------------------------|------------------------|
-    | Lobster             | Lobster                    | Lobster                |
+    | "most_viewed_product" | "most_added_to_cart_product" | "most_purchased_product" |
+    |-----------------------|------------------------------|--------------------------|
+    | Oyster                | Lobster                      | Lobster                  |
 
-    <br/>
+    <br>
 
 2. Which product was most likely to be abandoned?
 
-    - For this question, the products that are least purchased by the users are the products that most likely to be abandoned.
-
     Query:
 
     ```sql
-    WITH min_CTE
-    AS (
-        SELECT MIN(purchase_count) AS least_purchases
-        FROM clique_bait.products_details
-        )
-        ,purchase_CTE
-    AS (
-        SELECT product_name AS least_purchased_product
-        FROM clique_bait.products_details
-        WHERE purchase_count = (
-                SELECT least_purchases
-                FROM min_CTE
-                )
-        )
-    SELECT *
-    FROM purchase_CTE;
+    WITH product_purchase_rank AS (
+        SELECT
+            product_name,
+            RANK() OVER (ORDER BY purchased_num) AS product_rank
+        FROM
+            product_funnel
+    )
+    SELECT
+        product_name
+    FROM
+        product_purchase_rank
+    WHERE
+        product_rank = 1;
     ```
 
     Output:
 
-    | least_purchased_product |
-    |-------------------------|
-    | Russian Caviar          |
-    | Tuna                    |
+    | "product_name" |
+    |----------------|
+    | Tuna           |
+    | Russian Caviar |
 
-    <br/>
+    <br>
 
 3. Which product had the highest view to purchase percentage?
 
-    - To answer this question, find the view to purchase ration percentage for every product.
-    - Order the result and show the TOP 1 from the `products` and its `view_to_purchase_percentage`.
-
     Query:
 
     ```sql
-    WITH percentage_CTE
-    AS (
-        SELECT product_name
-            ,views_count
-            ,purchase_count
-            ,ROUND((CAST(purchase_count AS FLOAT) / views_count * 100), 2) AS view_to_purchase_percentage
-        FROM clique_bait.products_details
-        )
-    SELECT TOP 1 product_name
-        ,CONCAT(view_to_purchase_percentage, '%') AS view_to_purchase_percentage
-    FROM percentage_CTE
-    ORDER BY view_to_purchase_percentage DESC;
+    SELECT
+        product_name,
+        ROUND((purchased_num::NUMERIC / viewed_num), 2) * 100 AS view_to_purchase_percentage
+    FROM
+        product_funnel
+    ORDER BY
+        2 DESC
+    LIMIT 1;
     ```
 
     Output:
 
-    | product_name | view_to_purchase_percentage |
-    |--------------|-----------------------------|
-    | Lobster      | 29.98%                      |
+    | "product_name" | "view_to_purchase_percentage" |
+    |----------------|-------------------------------|
+    | Lobster        | 49.00                         |
+
+    <br>
 
 4. What is the average conversion rate from view to cart add?
 
-    - First, find every conversion rate for each visit.
-    - Use `AVG()` function to find the average from the result.
-
     Query:
 
     ```sql
-    WITH view_to_cart_CTE
-    AS (
-        SELECT product_name
-            ,views_count
-            ,added_to_cart_count
-            ,(CAST(added_to_cart_count AS FLOAT) / views_count * 100) AS view_to_cart_add_ratio
-        FROM clique_bait.products_details
-        )
-    SELECT ROUND(AVG(view_to_cart_add_ratio), 2) AS view_to_cart_add_ratio_avg
-    FROM view_to_cart_CTE;
+    SELECT
+        ROUND(AVG(100 * added_to_cart_num::NUMERIC / viewed_num), 2) AS view_to_cart_add_percentage
+    FROM
+        product_funnel;
     ```
 
     Output:
 
-    | view_to_cart_add_ratio_avg |
-    |----------------------------|
-    | 37.87                      |
+    | "view_to_cart_add_percentage" |
+    |-------------------------------|
+    | 60.95                         |
+
+    <br>
 
 5. What is the average conversion rate from cart add to purchase?
 
-    - First, find every conversion rate for each visit.
-    - Use `AVG()` function to find the average from the result.
-
     Query:
 
     ```sql
-    WITH cart_add_to_purchase_CTE
-    AS (
-        SELECT product_name
-            ,added_to_cart_count
-            ,purchase_count
-            ,(CAST(purchase_count AS FLOAT) / added_to_cart_count * 100) AS view_to_cart_add_ratio
-        FROM clique_bait.products_details
-        )
-    SELECT ROUND(AVG(view_to_cart_add_ratio), 2) AS cart_add_to_purchase_ratio_avg
-    FROM cart_add_to_purchase_CTE;
+    SELECT
+        ROUND(AVG(100 * purchased_num::NUMERIC / added_to_cart_num), 2) AS cart_to_purchase_percentage
+    FROM
+        product_funnel;
     ```
 
     Output:
 
-    | cart_add_to_purchase_ratio_avg |
-    |--------------------------------|
-    | 75.93                          |
+    | "cart_to_purchase_percentage" |
+    |-------------------------------|
+    | 75.93                         |
+
+---
