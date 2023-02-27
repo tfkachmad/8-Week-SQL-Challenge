@@ -1,7 +1,5 @@
 # :fishing_pole_and_fish: Case Study 6 - Clique Bait: Solution A. Entity Relationship Diagram
 
-![badge](https://img.shields.io/badge/Powered%20By-SQL%20Server-%23CC2927?logo=microsoftsqlserver)
-
 Using the following DDL schema details to create an ERD for all the Clique Bait datasets.
 
 ```sql
@@ -41,10 +39,8 @@ CREATE TABLE clique_bait.events (
 );
 ```
 
-Entity Relationship Diagram Result from [**dbdiagram.io**](https://dbdiagram.io/d/624fcdd42514c97903f34e48).
+Entity Relationship Diagram Result from [**dbdiagram.io**](https://dbdiagram.io/d/63fbeb29296d97641d83dc32).
 
-<p align="center" width="100%">
-    <img width="80%" src="../images/clique-bait-erd.png">
-</p>
+![clique-bait-erd](../images/clique-bait-erd.png)
 
 ---
