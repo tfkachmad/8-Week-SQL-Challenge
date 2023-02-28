@@ -7,13 +7,12 @@ Find the full case study [**here**](https://8weeksqlchallenge.com/case-study-7/)
 # :books: Table of Contents <!-- omit in toc -->
 
 - [:briefcase: Business Case](#briefcase-business-case)
-- [:bookmark_tabs:Example Datasets](#bookmark_tabsexample-datasets)
-- [:triangular_flag_on_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
+- [:bookmark\_tabs:Example Datasets](#bookmark_tabsexample-datasets)
+- [:triangular\_flag\_on\_post: Questions and Solution](#triangular_flag_on_post-questions-and-solution)
   - [A. High Level Sales Analysis](#a-high-level-sales-analysis)
   - [B. Transaction Analysis](#b-transaction-analysis)
   - [C. Product Analysis](#c-product-analysis)
   - [D. Reporting Challenge](#d-reporting-challenge)
-  - [E. Bonus Question](#e-bonus-question)
 
 ---
 
@@ -66,58 +65,6 @@ Danny, the CEO of this trendy fashion company has asked you to assist the teamâ€
 | 2a2353  | 3    | 57    | 21       | t      | 26cc98 | 2021-01-19 01:39:00.3456 |
 | f084eb  | 3    | 36    | 21       | t      | 26cc98 | 2021-01-19 01:39:00.3456 |
 | c4a632  | 1    | 13    | 21       | f      | ef648d | 2021-01-27 02:18:17.1648 |
-
-</div>
-
-<br>
-
-<div align="center">
-
-**Table 3: product_hierarchy**
-
-| id   | parent_id | level_text          | level_name |
-| :--- | :-------- | :------------------ | :--------- |
-| 1    |           | Womens              | Category   |
-| 2    |           | Mens                | Category   |
-| 3    | 1         | Jeans               | Segment    |
-| 4    | 1         | Jacket              | Segment    |
-| 5    | 2         | Shirt               | Segment    |
-| 6    | 2         | Socks               | Segment    |
-| 7    | 3         | Navy Oversized      | Style      |
-| 8    | 3         | Black Straight      | Style      |
-| 9    | 3         | Cream Relaxed       | Style      |
-| 10   | 4         | Khaki Suit          | Style      |
-| 11   | 4         | Indigo Rain         | Style      |
-| 12   | 4         | Grey Fashion        | Style      |
-| 13   | 5         | White Tee           | Style      |
-| 14   | 5         | Teal Button Up      | Style      |
-| 15   | 5         | Blue Polo           | Style      |
-| 16   | 6         | Navy Solid          | Style      |
-| 17   | 6         | White Striped       | Style      |
-| 18   | 6         | Pink Fluro Polkadot | Style      |
-
-</div>
-
-<br>
-
-<div align="center">
-
-**Table 4: product_prices**
-
-| id   | product_id | price |
-| :--- | :--------- | :---- |
-| 7    | c4a632     | 13    |
-| 8    | e83aa3     | 32    |
-| 9    | e31d39     | 10    |
-| 10   | d5e9a6     | 23    |
-| 11   | 72f5d4     | 19    |
-| 12   | 9ec847     | 54    |
-| 13   | 5d267b     | 40    |
-| 14   | c8d436     | 10    |
-| 15   | 2a2353     | 57    |
-| 16   | f084eb     | 36    |
-| 17   | b9a74d     | 17    |
-| 18   | 2feb6b     | 29    |
 
 </div>
 
@@ -196,20 +143,5 @@ Feel free to split up your final outputs into as many tables as you need - but b
 **Click** the badge below to view my solution for this set of questions.
 
 [![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-7-Balanced-Tree-Clothing-Co/Solution-D-Reporting-Challenge.md)
-
-## E. Bonus Question
-
-<details>
-<summary>Questions</summary>
-
-Use a single SQL query to transform the `product_hierarchy` and `product_prices` datasets to the product_details table.
-
-Hint: you may want to consider using a recursive CTE to solve this problem!
-
-</details>
-
-**Click** the badge below to view my solution for this question.
-
-[![badge](https://img.shields.io/badge/Solution-CLICK%20HERE!-%23fc657e?style=for-the-badge&labelColor=a91d22)](https://github.com/tfkachmad/8-Week-SQL-Challenge/blob/main/Case-Study-7-Balanced-Tree-Clothing-Co/Solution-E-Bonus-Question.md)
 
 ---
