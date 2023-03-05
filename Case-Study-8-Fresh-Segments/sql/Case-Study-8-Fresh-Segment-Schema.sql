@@ -1223,7 +1223,7 @@ VALUES
   ('51119', 'Skin Disorder Researchers', 'People reading news and advice on preventing and treating skin disorders.', '2019-04-26 18:00:00', '2019-04-29 14:20:04'),
   ('51120', 'Foot Health Researchers', 'People reading news and advice on preventing and treating foot health issues.', '2019-04-26 18:00:00', '2019-04-29 14:20:04'),
   ('51678', 'Plumbers', 'Professionals reading industry news and researching products and services for plumbers.', '2019-05-06 22:00:00', '2019-05-07 18:50:04');
-  
+
 -- update the null values
 UPDATE fresh_segments.interest_map
 SET interest_summary = NULL
@@ -15516,7 +15516,7 @@ VALUES
   ('NULL', 'NULL', 'NULL', '21246', '1.61', '0.68', '1191', '0.25'),
   ('NULL', 'NULL', 'NULL', 'NULL', '1.51', '0.63', '1193', '0.08'),
   ('NULL', 'NULL', 'NULL', 'NULL', '1.64', '0.62', '1194', '0');
-  
+
 -- update NULL values
 UPDATE fresh_segments.interest_metrics
 SET _month = CASE WHEN _month = 'NULL' THEN NULL::INTEGER ELSE _month::INTEGER END;
@@ -15539,5 +15539,4 @@ VALUES
   ('{"month": 7, "year": 2018, "month_year": "07-2018", "a.attribute_interest_id": 32486, "average_composition": 11.89, "average_index": 6.19, "rank": 1, "percentile_rank": 99.86}'::JSON),
   ('{"month": 7, "year": 2018, "month_year": "07-2018", "a.attribute_interest_id": 32486, "average_composition": 11.89, "average_index": 6.19, "rank": 1, "percentile_rank": 99.86}'),
 ('{"month": 7, "year": 2018, "month_year": "07-2018", "a.attribute_interest_id": 6106, "average_composition": 9.93, "average_index": 5.31, "rank": 2, "percentile_rank": 99.73}'),
-('{"month": 7, "year": 2018, "month_year": "07-2018", "a.attribute_interest_id": 18923, "average_composition": 10.85, "average_index": 5.29, "rank": 3, "percentile_rank": 99.59}')
-;
+('{"month": 7, "year": 2018, "month_year": "07-2018", "a.attribute_interest_id": 18923, "average_composition": 10.85, "average_index": 5.29, "rank": 3, "percentile_rank": 99.59}');
